@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fichero de Español</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Piazzolla:ital,wght@0,500;0,600;0,700;1,500&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#F2EFE4;
+    --surface:#FFFDF7;
+    --surface-2:#E7E1CE;
+    --ink:#20281F;
+    --ink-soft:#5B6152;
+    --rule:#D8D1B8;
+    --accent-navy:#2B4570;
+    --accent-navy-ink:#1E3255;
+    --accent-pine:#2F6355;
+    --accent-pine-ink:#204A40;
+    --accent-gold:#B87F1F;
+    --accent-gold-ink:#8C6015;
+    --accent-red:#AC3A2C;
+    --accent-red-ink:#8A2D22;
+    --on-accent:#FBF8EF;
+    --shadow: 0 1px 2px rgba(32,40,31,.06), 0 6px 16px -8px rgba(32,40,31,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#181A15;
+      --surface:#21241C;
+      --surface-2:#2B2E23;
+      --ink:#EEE9D8;
+      --ink-soft:#A6A18C;
+      --rule:#3B3E31;
+      --accent-navy:#8AA3D6;
+      --accent-navy-ink:#C4D3EE;
+      --accent-pine:#6FBBA1;
+      --accent-pine-ink:#B3E4D2;
+      --accent-gold:#E3AC4E;
+      --accent-gold-ink:#F4D599;
+      --accent-red:#E17A69;
+      --accent-red-ink:#F3B4A8;
+      --on-accent:#1B1D16;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#181A15;
+    --surface:#21241C;
+    --surface-2:#2B2E23;
+    --ink:#EEE9D8;
+    --ink-soft:#A6A18C;
+    --rule:#3B3E31;
+    --accent-navy:#8AA3D6;
+    --accent-navy-ink:#C4D3EE;
+    --accent-pine:#6FBBA1;
+    --accent-pine-ink:#B3E4D2;
+    --accent-gold:#E3AC4E;
+    --accent-gold-ink:#F4D599;
+    --accent-red:#E17A69;
+    --accent-red-ink:#F3B4A8;
+    --on-accent:#1B1D16;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:'Work Sans',ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Piazzolla',Georgia,'Times New Roman',serif;
+    text-wrap:balance;
+    font-weight:600;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace; font-variant-numeric:tabular-nums;}
+  .gloss{color:var(--ink-soft); font-size:.85em; font-style:italic;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--accent-navy); outline-offset:2px;}
+
+  .app-shell{max-width:920px; margin:0 auto; padding:20px 20px 64px;}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+    padding-bottom:18px; border-bottom:1px solid var(--rule); margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; flex-direction:column; gap:2px; cursor:pointer; background:none; border:none; text-align:left; padding:0; color:inherit;}
+  .brand h1{font-size:1.6rem; letter-spacing:.2px;}
+  .brand .sub{color:var(--ink-soft); font-size:.82rem;}
+  .top-stats{display:flex; align-items:center; gap:14px;}
+  .chip{
+    display:flex; align-items:center; gap:6px;
+    background:var(--surface); border:1px solid var(--rule); border-radius:999px;
+    padding:7px 12px; font-size:.82rem; box-shadow:var(--shadow);
+  }
+  .chip .num{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:.95rem;}
+  .ring-wrap{position:relative; width:44px; height:44px;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-wrap .pct{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:.62rem; font-weight:600;
+  }
+  .info-btn{
+    background:var(--surface-2); border:1px solid var(--rule); color:var(--ink);
+    width:30px; height:30px; border-radius:50%; cursor:pointer; font-family:'Piazzolla',serif; font-style:italic; font-weight:700;
+  }
+  .info-panel{
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:16px 18px;
+    margin-bottom:20px; box-shadow:var(--shadow); font-size:.88rem; line-height:1.55;
+  }
+  .info-panel h3{font-size:.95rem; margin-bottom:8px;}
+  .info-panel ul{margin:0; padding-left:1.1em; color:var(--ink-soft);}
+  .info-panel li{margin-bottom:4px;}
+  .info-panel li b{color:var(--ink); font-weight:600;}
+
+  /* ---------- dashboard ---------- */
+  .section-label{
+    font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-soft);
+    margin:26px 0 10px; font-weight:600;
+  }
+  .dash-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
+  .topic-card{
+    background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+    box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+  }
+  .topic-tab{height:6px; width:100%;}
+  .topic-tab.cat-grammar{background:var(--accent-navy);}
+  .topic-tab.cat-verbs{background:var(--accent-pine);}
+  .topic-tab.cat-vocab{background:var(--accent-gold);}
+  .topic-body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:10px; flex:1;}
+  .topic-title{font-family:'Piazzolla',serif; font-weight:600; font-size:1.05rem;}
+  .topic-blurb{font-size:.8rem; color:var(--ink-soft); line-height:1.4;}
+  .mastery-row{display:flex; align-items:center; gap:8px; font-size:.72rem; color:var(--ink-soft);}
+  .mastery-bar{flex:1; height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden;}
+  .mastery-fill{height:100%; border-radius:99px;}
+  .cat-grammar .mastery-fill{background:var(--accent-navy);}
+  .cat-verbs .mastery-fill{background:var(--accent-pine);}
+  .cat-vocab .mastery-fill{background:var(--accent-gold);}
+  .topic-actions{display:flex; gap:8px; margin-top:auto;}
+
+  .btn{
+    border-radius:8px; border:1px solid var(--rule); background:var(--surface);
+    padding:9px 14px; font-size:.83rem; font-weight:600; cursor:pointer; color:var(--ink);
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-sm{padding:7px 11px; font-size:.78rem; flex:1;}
+  .btn-primary{background:var(--accent-navy); border-color:var(--accent-navy); color:var(--on-accent);}
+  .btn-pine{background:var(--accent-pine); border-color:var(--accent-pine); color:var(--on-accent);}
+  .btn-ghost{background:transparent;}
+  .btn-block{width:100%;}
+  .btn-lg{padding:14px 18px; font-size:.95rem; border-radius:10px;}
+
+  .global-actions{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap;}
+  .global-card{
+    flex:1; min-width:220px; background:var(--surface); border:1px solid var(--rule); border-radius:12px;
+    padding:18px 20px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:8px;
+  }
+  .global-card h3{font-size:1.05rem;}
+  .global-card p{margin:0; font-size:.82rem; color:var(--ink-soft); line-height:1.45;}
+
+  .footer-links{margin-top:34px; text-align:center; font-size:.76rem; color:var(--ink-soft);}
+  .footer-links button{background:none; border:none; color:var(--ink-soft); text-decoration:underline; cursor:pointer; font-size:.76rem;}
+
+  /* ---------- learn (flashcards) ---------- */
+  .view-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:10px; flex-wrap:wrap;}
+  .back-btn{background:none; border:none; color:var(--ink-soft); font-size:.84rem; cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .progress-track{flex:1; height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden; margin:0 14px;}
+  .progress-fill{height:100%; background:var(--accent-navy); border-radius:99px; transition:width .25s ease;}
+  .progress-text{font-family:'IBM Plex Mono',monospace; font-size:.78rem; color:var(--ink-soft); white-space:nowrap;}
+
+  .flip-outer{perspective:1400px; max-width:520px; margin:0 auto;}
+  .flip-card{
+    position:relative; min-height:260px; cursor:pointer;
+  }
+  .flip-inner{
+    position:relative; width:100%; min-height:260px; transition:transform .45s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  @media (prefers-reduced-motion:reduce){ .flip-inner{transition:none;} }
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-face{
+    position:absolute; inset:0; backface-visibility:hidden; border-radius:14px; border:1px solid var(--rule);
+    background:var(--surface); box-shadow:var(--shadow); padding:30px 26px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; gap:10px;
+    background-image:repeating-linear-gradient(var(--surface) 0 27px, var(--rule) 27px 28px);
+  }
+  .flip-face.back{transform:rotateY(180deg);}
+  .card-icon{font-size:2rem; line-height:1;}
+  .card-prompt{font-family:'Piazzolla',serif; font-size:1.5rem; font-weight:600;}
+  .card-hint{color:var(--ink-soft); font-size:.82rem;}
+  .card-answer{font-family:'Piazzolla',serif; font-size:1.6rem; font-weight:600; color:var(--accent-pine-ink);}
+  .card-note{font-size:.85rem; color:var(--ink-soft); max-width:380px; line-height:1.4;}
+  .learn-actions{display:flex; gap:10px; justify-content:center; margin-top:20px;}
+  .tap-hint{text-align:center; color:var(--ink-soft); font-size:.78rem; margin-top:14px;}
+
+  /* ---------- session (quiz/test) ---------- */
+  .session-card{
+    max-width:560px; margin:0 auto; background:var(--surface); border:1px solid var(--rule); border-radius:14px;
+    box-shadow:var(--shadow); padding:28px 26px;
+  }
+  .qchip{
+    display:inline-block; font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; font-weight:700;
+    padding:3px 9px; border-radius:99px; margin-bottom:14px;
+  }
+  .qchip.cat-grammar{background:color-mix(in srgb, var(--accent-navy) 18%, transparent); color:var(--accent-navy-ink);}
+  .qchip.cat-verbs{background:color-mix(in srgb, var(--accent-pine) 18%, transparent); color:var(--accent-pine-ink);}
+  .qchip.cat-vocab{background:color-mix(in srgb, var(--accent-gold) 20%, transparent); color:var(--accent-gold-ink);}
+  .q-prompt{font-family:'Piazzolla',serif; font-size:1.35rem; font-weight:600; line-height:1.35; margin-bottom:18px;}
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .choice-btn{
+    text-align:left; padding:12px 14px; border-radius:9px; border:1px solid var(--rule); background:var(--surface-2);
+    font-size:.92rem; cursor:pointer; color:var(--ink);
+  }
+  .choice-btn:hover{border-color:var(--accent-navy);}
+  .choice-btn.correct{background:color-mix(in srgb, var(--accent-pine) 22%, var(--surface)); border-color:var(--accent-pine);}
+  .choice-btn.incorrect{background:color-mix(in srgb, var(--accent-red) 20%, var(--surface)); border-color:var(--accent-red);}
+  .choice-btn:disabled{cursor:default;}
+  .text-row{display:flex; gap:10px;}
+  .text-input{
+    flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--rule); background:var(--surface-2);
+    color:var(--ink); font-size:.95rem; font-family:'IBM Plex Mono',monospace;
+  }
+  .feedback{
+    margin-top:18px; padding:13px 15px; border-radius:9px; font-size:.88rem; line-height:1.5;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .feedback.correct{background:color-mix(in srgb, var(--accent-pine) 16%, var(--surface)); border:1px solid var(--accent-pine);}
+  .feedback.incorrect{background:color-mix(in srgb, var(--accent-red) 14%, var(--surface)); border:1px solid var(--accent-red);}
+  .feedback .fmark{font-weight:700; font-size:1.05rem;}
+  .feedback.correct .fmark{color:var(--accent-pine-ink);}
+  .feedback.incorrect .fmark{color:var(--accent-red-ink);}
+  .feedback b{font-weight:700;}
+  .session-footer{display:flex; justify-content:flex-end; margin-top:18px;}
+
+  /* ---------- results ---------- */
+  .results-top{text-align:center; margin-bottom:26px;}
+  .score-big{font-family:'Piazzolla',serif; font-weight:700; font-size:3rem;}
+  .score-sub{color:var(--ink-soft); font-size:.9rem;}
+  .breakdown-list{display:flex; flex-direction:column; gap:10px; margin-bottom:26px;}
+  .breakdown-row{display:flex; align-items:center; gap:10px; font-size:.83rem;}
+  .breakdown-name{width:170px; flex-shrink:0; color:var(--ink-soft);}
+  .breakdown-track{flex:1; height:8px; background:var(--surface-2); border-radius:99px; overflow:hidden;}
+  .breakdown-fill{height:100%; border-radius:99px; background:var(--accent-navy);}
+  .breakdown-num{font-family:'IBM Plex Mono',monospace; font-size:.76rem; width:44px; text-align:right; color:var(--ink-soft);}
+  .missed-list{display:flex; flex-direction:column; gap:10px; margin-bottom:24px;}
+  .missed-item{background:var(--surface); border:1px solid var(--rule); border-radius:9px; padding:12px 14px; font-size:.85rem;}
+  .missed-item .mp{color:var(--ink-soft); margin-bottom:3px;}
+  .missed-item .ma{color:var(--accent-pine-ink); font-weight:600;}
+  .results-actions{display:flex; gap:10px; flex-wrap:wrap;}
+
+  @media (max-width:520px){
+    .choices{grid-template-columns:1fr;}
+    .breakdown-name{width:120px;}
+  }
+
+  /* ---------- nav bar ---------- */
+  .nav-bar{display:flex; gap:6px; overflow-x:auto; margin-bottom:24px; padding-bottom:2px;}
+  .nav-btn{
+    white-space:nowrap; padding:8px 14px; border-radius:999px; border:1px solid var(--rule);
+    background:var(--surface); font-size:.82rem; font-weight:600; color:var(--ink-soft); cursor:pointer;
+  }
+  .nav-btn.active{background:var(--accent-navy); border-color:var(--accent-navy); color:var(--on-accent);}
+
+  /* ---------- page header ---------- */
+  .page-title{font-size:1.5rem; margin-bottom:8px; text-wrap:balance;}
+  .page-desc{color:var(--ink-soft); font-size:.9rem; line-height:1.55; max-width:62ch; margin:0 0 18px;}
+
+  /* ---------- home progress ---------- */
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px;}
+  .stat-tile{
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px; box-shadow:var(--shadow);
+    padding:16px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .stat-value{font-family:'Piazzolla',serif; font-size:1.7rem; font-weight:700;}
+  .stat-label{font-size:.74rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);}
+  .cat-bars{
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px; box-shadow:var(--shadow);
+    padding:14px 18px; display:flex; flex-direction:column; gap:10px; margin-bottom:8px;
+  }
+  .cat-bar-row{display:flex; align-items:center; gap:10px; font-size:.82rem;}
+  .cat-bar-name{width:90px; flex-shrink:0; color:var(--ink-soft);}
+  .mastery-pct{font-size:.76rem; color:var(--ink-soft); width:38px; text-align:right;}
+  .mastery-fill.cat-grammar{background:var(--accent-navy);}
+  .mastery-fill.cat-verbs{background:var(--accent-pine);}
+  .mastery-fill.cat-vocab{background:var(--accent-gold);}
+
+  .jump-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; margin-bottom:8px;}
+
+  /* ---------- study methods ---------- */
+  .method-icon{font-size:1.8rem; line-height:1;}
+
+  /* ---------- guided exercises ---------- */
+  .rule-card{max-width:560px; margin:0 auto; text-align:left;}
+  .rule-card .page-title{margin-bottom:12px;}
+  .rule-text{font-size:.95rem; line-height:1.6; color:var(--ink); margin:0 0 18px;}
+  .rule-example{background:var(--surface-2); border-radius:9px; padding:14px 16px; margin-bottom:22px;}
+  .rule-example-es{font-family:'Piazzolla',serif; font-size:1.1rem; font-weight:600; margin-bottom:4px;}
+  .hint-row{margin:-4px 0 16px;}
+  .hint-text{
+    font-size:.82rem; color:var(--accent-gold-ink);
+    background:color-mix(in srgb, var(--accent-gold) 14%, var(--surface));
+    padding:9px 12px; border-radius:8px; line-height:1.4;
+  }
+
+  /* ---------- matching pairs ---------- */
+  .match-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:6px;}
+  .match-tile{
+    min-height:72px; padding:12px 14px; border-radius:9px; border:1px solid var(--rule);
+    background:var(--surface-2); font-size:.8rem; line-height:1.4; cursor:pointer; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    overflow-wrap:break-word; word-break:break-word; hyphens:auto;
+  }
+  .match-tile:disabled{cursor:default;}
+  .match-tile.selected{border-color:var(--accent-navy); background:color-mix(in srgb, var(--accent-navy) 14%, var(--surface));}
+  .match-tile.matched{opacity:.35; border-color:var(--accent-pine);}
+  .match-tile.wrong{border-color:var(--accent-red); background:color-mix(in srgb, var(--accent-red) 16%, var(--surface));}
+</style>
+</head>
+<body style="margin:0;">
+
+<div class="app-shell" id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================= DATA ============================= */
+  var PRONOUNS = ['yo','tú','él/ella/Ud.','nosotros/as','vosotros/as','ellos/ellas/Uds.'];
+
+  var TOPICS = [
+    {id:'ser-estar', name:'Ser vs. Estar', cat:'grammar', blurb:'When to use each "to be" verb'},
+    {id:'articles', name:'Articles', cat:'grammar', blurb:'el/la/los/las · un/una/unos/unas'},
+    {id:'adjectives', name:'Adjectives & Possessives', cat:'grammar', blurb:'Agreement, short forms, possessives'},
+    {id:'indef-neg', name:'Indefinite & Negative Words', cat:'grammar', blurb:'alguien, nadie, nunca, tampoco...'},
+    {id:'pero-sino', name:'Pero vs. Sino', cat:'grammar', blurb:'"But" vs. "but rather" after a negative'},
+    {id:'regular-verbs', name:'Regular Verbs', cat:'verbs', blurb:'-ar, -er, -ir in the present tense'},
+    {id:'tener-venir', name:'Tener & Venir', cat:'verbs', blurb:'Conjugation + expressions with tener'},
+    {id:'ir-verb', name:'The Verb Ir', cat:'verbs', blurb:'ir a + infinitive · vamos a...'},
+    {id:'stem-changing', name:'Stem-Changing Verbs', cat:'verbs', blurb:'e:ie, o:ue, e:i, and irregular yo forms'},
+    {id:'vocab-places', name:'Places', cat:'vocab', blurb:'Places vocabulary'},
+    {id:'vocab-food', name:'Food', cat:'vocab', blurb:'Food vocabulary'},
+    {id:'vocab-feelings', name:'Estar + Emotions', cat:'vocab', blurb:'How you\'re feeling'},
+    {id:'reflexive-verbs', name:'Reflexive Verbs', cat:'verbs', blurb:'Daily routine with reflexive pronouns'},
+    {id:'gustar-verbs', name:'Verbs Like Gustar', cat:'verbs', blurb:'aburrir, encantar, faltar, importar...'},
+    {id:'vocab-people', name:'People & Things', cat:'vocab', blurb:'Identifying people and objects'},
+    {id:'vocab-personality', name:'Personality', cat:'vocab', blurb:'Descriptive adjectives'},
+    {id:'vocab-activities', name:'Activities', cat:'vocab', blurb:'Everyday activity verbs'},
+    {id:'vocab-places-2', name:'More Places', cat:'vocab', blurb:'Where you go'},
+    {id:'vocab-bathroom', name:'In the Bathroom', cat:'vocab', blurb:'Bathroom vocabulary'},
+    {id:'vocab-routine', name:'Routine & Sequence Words', cat:'vocab', blurb:'Sequence words and daily routine'}
+  ];
+  var TOPIC_MAP = {};
+  TOPICS.forEach(function(t){ TOPIC_MAP[t.id] = t; });
+
+  var VERBS = {
+    regular: [
+      {inf:'hablar', en:'to speak', forms:['hablo','hablas','habla','hablamos','habláis','hablan']},
+      {inf:'comer', en:'to eat', forms:['como','comes','come','comemos','coméis','comen']},
+      {inf:'escribir', en:'to write', forms:['escribo','escribes','escribe','escribimos','escribís','escriben']}
+    ],
+    irregularYo: [
+      {inf:'hacer', en:'to do / make', forms:['hago','haces','hace','hacemos','hacéis','hacen']},
+      {inf:'poner', en:'to put', forms:['pongo','pones','pone','ponemos','ponéis','ponen']},
+      {inf:'salir', en:'to leave / go out', forms:['salgo','sales','sale','salimos','salís','salen']},
+      {inf:'suponer', en:'to suppose', forms:['supongo','supones','supone','suponemos','suponéis','suponen']},
+      {inf:'traer', en:'to bring', forms:['traigo','traes','trae','traemos','traéis','traen']},
+      {inf:'ver', en:'to see', forms:['veo','ves','ve','vemos','veis','ven']},
+      {inf:'oír', en:'to hear', forms:['oigo','oyes','oye','oímos','oís','oyen']}
+    ],
+    tenerVenir: [
+      {inf:'tener', en:'to have', forms:['tengo','tienes','tiene','tenemos','tenéis','tienen']},
+      {inf:'venir', en:'to come', forms:['vengo','vienes','viene','venimos','venís','vienen']}
+    ],
+    ir: [
+      {inf:'ir', en:'to go', forms:['voy','vas','va','vamos','vais','van']}
+    ],
+    stemEIE: [
+      {inf:'empezar', en:'to begin', forms:['empiezo','empiezas','empieza','empezamos','empezáis','empiezan']},
+      {inf:'cerrar', en:'to close', forms:['cierro','cierras','cierra','cerramos','cerráis','cierran']},
+      {inf:'comenzar', en:'to begin', forms:['comienzo','comienzas','comienza','comenzamos','comenzáis','comienzan']},
+      {inf:'entender', en:'to understand', forms:['entiendo','entiendes','entiende','entendemos','entendéis','entienden']},
+      {inf:'pensar', en:'to think', forms:['pienso','piensas','piensa','pensamos','pensáis','piensan']},
+      {inf:'perder', en:'to lose', forms:['pierdo','pierdes','pierde','perdemos','perdéis','pierden']},
+      {inf:'preferir', en:'to prefer', forms:['prefiero','prefieres','prefiere','preferimos','preferís','prefieren']},
+      {inf:'querer', en:'to want / love', forms:['quiero','quieres','quiere','queremos','queréis','quieren']}
+    ],
+    stemOUE: [
+      {inf:'volver', en:'to return', forms:['vuelvo','vuelves','vuelve','volvemos','volvéis','vuelven']},
+      {inf:'almorzar', en:'to have lunch', forms:['almuerzo','almuerzas','almuerza','almorzamos','almorzáis','almuerzan']},
+      {inf:'contar', en:'to count / tell', forms:['cuento','cuentas','cuenta','contamos','contáis','cuentan']},
+      {inf:'dormir', en:'to sleep', forms:['duermo','duermes','duerme','dormimos','dormís','duermen']},
+      {inf:'encontrar', en:'to find', forms:['encuentro','encuentras','encuentra','encontramos','encontráis','encuentran']},
+      {inf:'mostrar', en:'to show', forms:['muestro','muestras','muestra','mostramos','mostráis','muestran']},
+      {inf:'poder', en:'to be able to', forms:['puedo','puedes','puede','podemos','podéis','pueden']},
+      {inf:'recordar', en:'to remember', forms:['recuerdo','recuerdas','recuerda','recordamos','recordáis','recuerdan']}
+    ],
+    jugar: [
+      {inf:'jugar', en:'to play', forms:['juego','juegas','juega','jugamos','jugáis','juegan']}
+    ],
+    stemEI: [
+      {inf:'pedir', en:'to ask for', forms:['pido','pides','pide','pedimos','pedís','piden']},
+      {inf:'conseguir', en:'to get / obtain', forms:['consigo','consigues','consigue','conseguimos','conseguís','consiguen']},
+      {inf:'decir', en:'to say / tell', forms:['digo','dices','dice','decimos','decís','dicen']},
+      {inf:'repetir', en:'to repeat', forms:['repito','repites','repite','repetimos','repetís','repiten']},
+      {inf:'seguir', en:'to follow / continue', forms:['sigo','sigues','sigue','seguimos','seguís','siguen']}
+    ]
+  };
+  var SER_FORMS = ['soy','eres','es','somos','sois','son'];
+  var ESTAR_FORMS = ['estoy','estás','está','estamos','estáis','están'];
+
+  var TENER_IDIOMS = [
+    {es:'tener...años', en:'to be __ years old'},
+    {es:'tener calor', en:'to be hot'},
+    {es:'tener frío', en:'to be cold'},
+    {es:'tener ganas de + inf.', en:'to feel like doing something'},
+    {es:'tener hambre', en:'to be hungry'},
+    {es:'tener prisa', en:'to be in a hurry'},
+    {es:'tener miedo', en:'to be afraid'},
+    {es:'tener razón', en:'to be right'},
+    {es:'tener sed', en:'to be thirsty'},
+    {es:'tener que + inf.', en:'to have to do something'}
+  ];
+
+  var VOCAB_PLACES = [
+    {es:'la fiesta', en:'party', icon:'🎉'},
+    {es:'el gimnasio', en:'gym', icon:'🏋️'},
+    {es:'la oficina', en:'office', icon:'💼'},
+    {es:'el parque', en:'park', icon:'🌳'},
+    {es:'el partido de básquetbol', en:'basketball game', icon:'🏀'},
+    {es:'el partido de béisbol', en:'baseball game', icon:'⚾'},
+    {es:'el partido de fútbol', en:'soccer game', icon:'⚽'},
+    {es:'la piscina', en:'pool', icon:'🏊'},
+    {es:'el restaurante', en:'restaurant', icon:'🍽️'},
+    {es:'el teatro', en:'theater', icon:'🎭'},
+    {es:'la tienda', en:'store', icon:'🛍️'}
+  ];
+  var VOCAB_FOOD = [
+    {es:'el almuerzo', en:'lunch', icon:'🍱'},
+    {es:'la carne', en:'meat', icon:'🥩'},
+    {es:'la cena', en:'dinner', icon:'🍽️'},
+    {es:'la comida', en:'food', icon:'🍲'},
+    {es:'el desayuno', en:'breakfast', icon:'🍳'},
+    {es:'la ensalada', en:'salad', icon:'🥗'},
+    {es:'los frijoles', en:'beans', icon:'🫘'},
+    {es:'la fruta', en:'fruit', icon:'🍇'},
+    {es:'la hamburguesa', en:'hamburger', icon:'🍔'},
+    {es:'la manzana', en:'apple', icon:'🍎'},
+    {es:'la naranja', en:'orange', icon:'🍊'},
+    {es:'el pescado', en:'fish', icon:'🐟'},
+    {es:'el pollo', en:'chicken', icon:'🍗'},
+    {es:'el postre', en:'dessert', icon:'🍰'},
+    {es:'el sándwich', en:'sandwich', icon:'🥪'},
+    {es:'las verduras', en:'vegetables', icon:'🥦'}
+  ];
+  var VOCAB_FEELINGS = [
+    {es:'estar alegre', en:'to be happy'},
+    {es:'estar bien', en:'to be well'},
+    {es:'estar cansado/a', en:'to be tired'},
+    {es:'estar contento/a', en:'to be happy'},
+    {es:'estar deprimido/a', en:'to be depressed'},
+    {es:'estar emocionado/a', en:'to be excited'},
+    {es:'estar enfermo/a', en:'to be sick'},
+    {es:'estar enojado/a', en:'to be mad'},
+    {es:'estar limpio/a', en:'to be clean'},
+    {es:'estar mal', en:'to be bad'},
+    {es:'estar más o menos', en:'to be more or less'},
+    {es:'estar nervioso/a', en:'to be nervous'},
+    {es:'estar ocupado/a', en:'to be busy'},
+    {es:'estar tranquilo/a', en:'to be calm'},
+    {es:'estar triste', en:'to be sad'}
+  ];
+  var INDEF_WORDS = [
+    {es:'alguien', en:'someone'},
+    {es:'algo', en:'something'},
+    {es:'alguno/a', en:'some, any'},
+    {es:'ninguno/a', en:'none, not any'},
+    {es:'nadie', en:'no one'},
+    {es:'nada', en:'nothing'},
+    {es:'siempre', en:'always'},
+    {es:'nunca', en:'never'},
+    {es:'también', en:'also'},
+    {es:'tampoco', en:'neither'},
+    {es:'o...o', en:'either...or'},
+    {es:'ni...ni', en:'neither...nor'},
+    {es:'jamás', en:'never, not ever'}
+  ];
+
+  var NOUNS = [
+    {es:'la fiesta', en:'party', g:'f', pl:false},
+    {es:'el gimnasio', en:'gym', g:'m', pl:false},
+    {es:'la oficina', en:'office', g:'f', pl:false},
+    {es:'el parque', en:'park', g:'m', pl:false},
+    {es:'la piscina', en:'pool', g:'f', pl:false},
+    {es:'el restaurante', en:'restaurant', g:'m', pl:false},
+    {es:'el teatro', en:'theater', g:'m', pl:false},
+    {es:'la tienda', en:'store', g:'f', pl:false},
+    {es:'la manzana', en:'apple', g:'f', pl:false},
+    {es:'el pescado', en:'fish', g:'m', pl:false},
+    {es:'el pollo', en:'chicken', g:'m', pl:false},
+    {es:'la ensalada', en:'salad', g:'f', pl:false},
+    {es:'la falda', en:'skirt', g:'f', pl:false},
+    {es:'el cinturón', en:'belt', g:'m', pl:false},
+    {es:'el disco', en:'record / album', g:'m', pl:false},
+    {es:'la corbata', en:'tie', g:'f', pl:false},
+    {es:'el traje', en:'suit', g:'m', pl:false},
+    {es:'el amigo', en:'friend (m)', g:'m', pl:false},
+    {es:'la amiga', en:'friend (f)', g:'f', pl:false},
+    {es:'el libro', en:'book', g:'m', pl:false}
+  ];
+
+  var PERSON_NOUNS = [
+    {es:'el chico', en:'the boy', g:'m', pl:false},
+    {es:'la chica', en:'the girl', g:'f', pl:false},
+    {es:'el amigo', en:'the friend', g:'m', pl:false},
+    {es:'la amiga', en:'the friend', g:'f', pl:false},
+    {es:'los estudiantes', en:'the students', g:'m', pl:true},
+    {es:'las profesoras', en:'the teachers', g:'f', pl:true},
+    {es:'mi hermano', en:'my brother', g:'m', pl:false},
+    {es:'mis hermanas', en:'my sisters', g:'f', pl:true}
+  ];
+
+  var ADJECTIVES = [
+    {base:'alto', en:'tall', forms:{ms:'alto', mp:'altos', fs:'alta', fp:'altas'}},
+    {base:'inteligente', en:'intelligent', forms:{ms:'inteligente', mp:'inteligentes', fs:'inteligente', fp:'inteligentes'}},
+    {base:'trabajador', en:'hard-working', forms:{ms:'trabajador', mp:'trabajadores', fs:'trabajadora', fp:'trabajadoras'}}
+  ];
+
+  var SHORT_FORMS = [
+    {prompt:'un ___ amigo <span class="gloss">(bueno → good friend)</span>', answer:['buen']},
+    {prompt:'una ___ idea <span class="gloss">(bueno → good idea)</span>', answer:['buena']},
+    {prompt:'un ___ día <span class="gloss">(malo → bad day)</span>', answer:['mal']},
+    {prompt:'una ___ semana <span class="gloss">(malo → bad week)</span>', answer:['mala']},
+    {prompt:'un ___ teatro <span class="gloss">(grande → great theater)</span>', answer:['gran']},
+    {prompt:'una ___ ciudad <span class="gloss">(grande → great city)</span>', answer:['gran']}
+  ];
+
+  var POSSESSIVES = [
+    {prompt:'(yo) ___ libro', answer:['mi'], choices:['mi','tu','su','nuestro']},
+    {prompt:'(tú) ___ falda', answer:['tu'], choices:['tu','mi','su','tus']},
+    {prompt:'(nosotros) ___ amigos', answer:['nuestros'], choices:['nuestro','nuestros','nuestras','sus']},
+    {prompt:'(ella) ___ tienda', answer:['su'], choices:['su','sus','mi','tu']},
+    {prompt:'(ellos) ___ discos', answer:['sus'], choices:['su','sus','nuestro','tu']},
+    {prompt:'(nosotras) ___ ideas', answer:['nuestras'], choices:['nuestro','nuestras','nuestros','sus']},
+    {prompt:'(vosotros) ___ profesora', answer:['vuestra'], choices:['vuestro','vuestra','vuestros','vuestras']},
+    {prompt:'(yo) ___ amigas', answer:['mis'], choices:['mi','mis','su','sus']}
+  ];
+
+  var SER_ESTAR_ITEMS = [
+    {prompt:'Mis padres ___ de México. <span class="gloss">(origin)</span>', answer:['son'], choices:['son','están'], note:'ser = origin / where someone is from'},
+    {prompt:'Ella ___ profesora. <span class="gloss">(profession)</span>', answer:['es'], choices:['es','está'], note:'ser = profession or occupation'},
+    {prompt:'Nosotros ___ altos. <span class="gloss">(characteristic)</span>', answer:['somos'], choices:['somos','estamos'], note:'ser = inherent characteristic'},
+    {prompt:'El libro ___ de Carlos. <span class="gloss">(possession)</span>', answer:['es'], choices:['es','está'], note:'ser = possession'},
+    {prompt:'Hoy ___ el dos de septiembre. <span class="gloss">(date)</span>', answer:['es'], choices:['es','está'], note:'ser = date'},
+    {prompt:'La silla ___ de madera. <span class="gloss">(material)</span>', answer:['es'], choices:['es','está'], note:'ser = what something is made of'},
+    {prompt:'La fiesta ___ en el gimnasio. <span class="gloss">(location of an event)</span>', answer:['es'], choices:['es','está'], note:'ser = location of an event'},
+    {prompt:'Mi mochila ___ en la oficina. <span class="gloss">(location of an object)</span>', answer:['está'], choices:['es','está'], note:'estar = physical location of a thing or person'},
+    {prompt:'Yo ___ muy cansado hoy. <span class="gloss">(physical state)</span>', answer:['estoy'], choices:['estoy','soy'], note:'estar = physical/emotional state'},
+    {prompt:'¿Cómo ___ tú? Un poco nerviosa. <span class="gloss">(emotion)</span>', answer:['estás'], choices:['estás','eres'], note:'estar = emotional state'},
+    {prompt:'Juan ___ delgado. <span class="gloss">(inherent trait)</span>', answer:['es'], choices:['es','está'], note:'ser = inherent trait, "Juan is a thin person"'},
+    {prompt:'Juan ___ más delgado hoy. <span class="gloss">(a change you notice)</span>', answer:['está'], choices:['es','está'], note:'estar = a perceived change or condition, "Juan looks thinner today"'}
+  ];
+
+  var ARTICLE_TYPE_LABEL = {def:'definite article', indef:'indefinite article'};
+
+  var INDEF_FILL_ITEMS = [
+    {prompt:'No tengo ___ idea de qué hacer.', answer:'ninguna', choices:['ninguna','alguna','nunca','nadie']},
+    {prompt:'¿___ quiere ir al cine esta noche?', answer:'alguien', choices:['alguien','alguno','algo','nadie']},
+    {prompt:'No hay ___ en la piscina.', answer:'nadie', choices:['nadie','nada','ninguno','tampoco']},
+    {prompt:'No quiero comer ___ ahora.', answer:'nada', choices:['nada','nadie','ninguna','tampoco']},
+    {prompt:'Ella ___ llega tarde a clase.', answer:'nunca', choices:['nunca','siempre','también','tampoco']},
+    {prompt:'Yo estudio español y mi hermano ___.', answer:'también', choices:['también','tampoco','nunca','nada']},
+    {prompt:'A mí no me gusta el café y a ti ___.', answer:'tampoco', choices:['tampoco','también','nunca','nadie']},
+    {prompt:'No tengo ___ tiempo ___ dinero para el viaje.', answer:'ni', choices:['ni','no','nunca','tampoco']}
+  ];
+
+  var INDEF_PERSONAL_A_ITEMS = [
+    {prompt:'No busco ___. <span class="gloss">(no one — a person)</span>', answer:'a nadie', choices:['a nadie','nadie'], note:'alguien/nadie take the personal a when they stand for a person.'},
+    {prompt:'¿Buscas ___ de tus hermanos? <span class="gloss">(any — a person)</span>', answer:'a alguno', choices:['a alguno','alguno'], note:'alguno/ninguno also take the personal a when they refer to a person.'},
+    {prompt:'No conozco ___ en esta clase. <span class="gloss">(anyone)</span>', answer:'a nadie', choices:['a nadie','nadie'], note:'alguien/nadie take the personal a when they stand for a person.'},
+    {prompt:'¿Ves ___ en la foto? <span class="gloss">(someone)</span>', answer:'a alguien', choices:['a alguien','alguien'], note:'alguien/nadie take the personal a when they stand for a person.'}
+  ];
+
+  var INDEF_TRANSFORM_ITEMS = [
+    {prompt:'Alguien llama a la puerta.', answers:['nadie llama a la puerta']},
+    {prompt:'Mis amigos van a alguna fiesta este sábado.', answers:['mis amigos no van a ninguna fiesta este sábado']},
+    {prompt:'¿Comes algo antes de clase?', answers:['no como nada antes de clase','no, no como nada antes de clase']},
+    {prompt:'Ella siempre llega a tiempo.', answers:['ella nunca llega a tiempo','ella no llega a tiempo nunca']},
+    {prompt:'Yo también quiero ir al concierto.', answers:['yo tampoco quiero ir al concierto']},
+    {prompt:'¿Tienes algún libro de historia?', answers:['no tengo ningún libro de historia','no, no tengo ningún libro de historia']},
+    {prompt:'Buscamos a alguien en la tienda.', answers:['no buscamos a nadie en la tienda']},
+    {prompt:'Siempre estudio los domingos.', answers:['nunca estudio los domingos','no estudio los domingos nunca']},
+    {prompt:'Hay algunas sillas libres.', answers:['no hay ninguna silla libre']},
+    {prompt:'¿Te gusta alguno de estos discos?', answers:['no me gusta ninguno de estos discos','no, no me gusta ninguno de estos discos']},
+    {prompt:'Mis primos van al cine o al teatro.', answers:['mis primos no van ni al cine ni al teatro']},
+    {prompt:'Tú y ella cocinan la cena.', answers:['ni tú ni ella cocinan la cena']},
+    {prompt:'Algunos estudiantes traen su propia comida.', answers:['ningún estudiante trae su propia comida']}
+  ];
+
+  var PERO_SINO_ITEMS = [
+    {prompt:'Los estudiantes no se acuestan temprano ___ tarde.', answer:'sino', choices:['sino','pero']},
+    {prompt:'María no habla francés ___ español.', answer:'sino', choices:['sino','pero']},
+    {prompt:'Esas gafas son caras, ___ bonitas.', answer:'pero', choices:['sino','pero']},
+    {prompt:'José es inteligente, ___ no saca buenas notas.', answer:'pero', choices:['sino','pero']},
+    {prompt:'No quiero café ___ té.', answer:'sino', choices:['sino','pero']},
+    {prompt:'Ella es baja, ___ muy fuerte.', answer:'pero', choices:['sino','pero']},
+    {prompt:'No vamos a la playa ___ al parque.', answer:'sino', choices:['sino','pero']},
+    {prompt:'Tengo hambre, ___ no quiero comer ahora.', answer:'pero', choices:['sino','pero']},
+    {prompt:'No es mi hermano ___ mi primo.', answer:'sino', choices:['sino','pero']},
+    {prompt:'El libro es difícil, ___ interesante.', answer:'pero', choices:['sino','pero']}
+  ];
+
+  var FUTURE_PLAN_ITEMS = [
+    {prompt:'I am going to study tonight.', answers:['voy a estudiar esta noche']},
+    {prompt:'We are going to eat at the restaurant.', answers:['vamos a comer en el restaurante']},
+    {prompt:'Let\'s go to the pool!', answers:['vamos a la piscina']},
+    {prompt:'She is going to the store.', answers:['ella va a la tienda']},
+    {prompt:'Let\'s eat now!', answers:['vamos a comer ahora']},
+    {prompt:'They are going to play soccer.', answers:['ellos van a jugar fútbol','ellos van a jugar al fútbol']}
+  ];
+
+  var REFLEXIVE_VERBS = [
+    {inf:'acordarse de', en:'to remember', forms:['me acuerdo','te acuerdas','se acuerda','nos acordamos','os acordáis','se acuerdan']},
+    {inf:'acostarse', en:'to go to bed', forms:['me acuesto','te acuestas','se acuesta','nos acostamos','os acostáis','se acuestan']},
+    {inf:'afeitarse', en:'to shave', forms:['me afeito','te afeitas','se afeita','nos afeitamos','os afeitáis','se afeitan']},
+    {inf:'arreglarse', en:'to get ready', forms:['me arreglo','te arreglas','se arregla','nos arreglamos','os arregláis','se arreglan']},
+    {inf:'bañarse', en:'to take a bath', forms:['me baño','te bañas','se baña','nos bañamos','os bañáis','se bañan']},
+    {inf:'cepillarse', en:'to brush (teeth, hair)', forms:['me cepillo','te cepillas','se cepilla','nos cepillamos','os cepilláis','se cepillan']},
+    {inf:'despertarse', en:'to wake up', forms:['me despierto','te despiertas','se despierta','nos despertamos','os despertáis','se despiertan']},
+    {inf:'dormirse', en:'to fall asleep', forms:['me duermo','te duermes','se duerme','nos dormimos','os dormís','se duermen']},
+    {inf:'ducharse', en:'to shower', forms:['me ducho','te duchas','se ducha','nos duchamos','os ducháis','se duchan']},
+    {inf:'enojarse con', en:'to get angry (with)', forms:['me enojo','te enojas','se enoja','nos enojamos','os enojáis','se enojan']},
+    {inf:'irse', en:'to go away, to leave', forms:['me voy','te vas','se va','nos vamos','os vais','se van']},
+    {inf:'lavarse', en:'to wash oneself', forms:['me lavo','te lavas','se lava','nos lavamos','os laváis','se lavan']},
+    {inf:'levantarse', en:'to get up', forms:['me levanto','te levantas','se levanta','nos levantamos','os levantáis','se levantan']},
+    {inf:'llamarse', en:'to be called, to be named', forms:['me llamo','te llamas','se llama','nos llamamos','os llamáis','se llaman']},
+    {inf:'maquillarse', en:'to put on makeup', forms:['me maquillo','te maquillas','se maquilla','nos maquillamos','os maquilláis','se maquillan']},
+    {inf:'peinarse', en:'to comb one\'s hair', forms:['me peino','te peinas','se peina','nos peinamos','os peináis','se peinan']},
+    {inf:'ponerse (la ropa)', en:'to put on (clothes)', forms:['me pongo','te pones','se pone','nos ponemos','os ponéis','se ponen']},
+    {inf:'preocuparse por', en:'to worry (about)', forms:['me preocupo','te preocupas','se preocupa','nos preocupamos','os preocupáis','se preocupan']},
+    {inf:'probarse', en:'to try on', forms:['me pruebo','te pruebas','se prueba','nos probamos','os probáis','se prueban']},
+    {inf:'quedarse', en:'to stay, to remain', forms:['me quedo','te quedas','se queda','nos quedamos','os quedáis','se quedan']},
+    {inf:'quitarse', en:'to take off', forms:['me quito','te quitas','se quita','nos quitamos','os quitáis','se quitan']},
+    {inf:'secarse', en:'to dry oneself', forms:['me seco','te secas','se seca','nos secamos','os secáis','se secan']},
+    {inf:'sentarse', en:'to sit down', forms:['me siento','te sientas','se sienta','nos sentamos','os sentáis','se sientan']},
+    {inf:'sentirse', en:'to feel', forms:['me siento','te sientes','se siente','nos sentimos','os sentís','se sienten']},
+    {inf:'vestirse', en:'to get dressed', forms:['me visto','te vistes','se viste','nos vestimos','os vestís','se visten']}
+  ];
+
+  var GUSTAR_VERBS = [
+    {inf:'aburrir', en:'to bore'},
+    {inf:'encantar', en:'to like very much, to love (things)'},
+    {inf:'faltar', en:'to lack, to need'},
+    {inf:'fascinar', en:'to fascinate, to like very much'},
+    {inf:'importar', en:'to be important to, to matter'},
+    {inf:'interesar', en:'to be interesting to, to interest'},
+    {inf:'molestar', en:'to bother, to annoy'},
+    {inf:'quedar', en:'to be left over, to fit (clothing, shoes)'}
+  ];
+
+  var VOCAB_PEOPLE = [
+    {es:'la comunidad', en:'community'},
+    {es:'el/la pintor(a)', en:'painter'},
+    {es:'el programa', en:'program'},
+    {es:'la revista', en:'magazine'},
+    {es:'el lápiz', en:'pencil'},
+    {es:'el/la pasajero(a)', en:'passenger'},
+    {es:'la computadora', en:'computer'},
+    {es:'el traje de baño', en:'swimsuit'},
+    {es:'la lección', en:'lesson'},
+    {es:'la natación', en:'swimming'},
+    {es:'el/la chico(a)', en:'the boy/girl'},
+    {es:'el/la estudiante', en:'student'},
+    {es:'el hombre', en:'man'},
+    {es:'la mujer', en:'woman'},
+    {es:'el maestro/la maestra', en:'teacher'},
+    {es:'el/la profesor(a)', en:'professor'}
+  ];
+
+  var VOCAB_PERSONALITY = [
+    {es:'delgada', en:'thin'},
+    {es:'morena', en:'dark-haired, dark-skinned'},
+    {es:'contenta', en:'happy'},
+    {es:'artístico(a)', en:'artistic'},
+    {es:'atlético(a)', en:'athletic'},
+    {es:'bonito(a)', en:'pretty'},
+    {es:'cómico(a)', en:'funny'},
+    {es:'desorganizado(a)', en:'disorganized'},
+    {es:'estudioso(a)', en:'studious'},
+    {es:'organizado(a)/ordenado(a)', en:'organized'},
+    {es:'rubio(a)', en:'blond'},
+    {es:'perezoso(a)', en:'lazy'},
+    {es:'serio(a)', en:'serious'},
+    {es:'simpático(a)', en:'nice'},
+    {es:'trabajador(a)', en:'hardworking'},
+    {es:'fácil', en:'easy'},
+    {es:'difícil', en:'difficult'}
+  ];
+
+  var VOCAB_ACTIVITIES = [
+    {es:'bailar', en:'to dance'},
+    {es:'hablar', en:'to talk'},
+    {es:'abrir', en:'to open'},
+    {es:'aprender', en:'to learn'},
+    {es:'vivir', en:'to live'},
+    {es:'recibir', en:'to receive'},
+    {es:'correr', en:'to run'},
+    {es:'desayunar', en:'to have breakfast'},
+    {es:'almorzar', en:'to have lunch'},
+    {es:'cenar', en:'to have dinner'},
+    {es:'comer', en:'to eat'},
+    {es:'beber refrescos', en:'to drink sodas'},
+    {es:'viajar', en:'to travel'},
+    {es:'escribir correos electrónicos', en:'to write emails'},
+    {es:'escuchar música', en:'to listen to music'},
+    {es:'estudiar', en:'to study'},
+    {es:'ir de compras', en:'to go shopping'},
+    {es:'jugar al fútbol', en:'to play soccer'},
+    {es:'leer un libro', en:'to read a book'},
+    {es:'mirar la televisión', en:'to watch television'},
+    {es:'pasar un rato con los amigos', en:'to spend time with friends'},
+    {es:'practicar deportes', en:'to practice sports'}
+  ];
+
+  var VOCAB_PLACES2 = [
+    {es:'la biblioteca', en:'library'},
+    {es:'el café', en:'coffee shop'},
+    {es:'la cafetería', en:'cafeteria'},
+    {es:'la casa', en:'house'},
+    {es:'el centro', en:'downtown'},
+    {es:'el centro comercial', en:'mall'},
+    {es:'la clase', en:'class'},
+    {es:'el concierto', en:'concert'},
+    {es:'la escuela', en:'school'},
+    {es:'el estadio', en:'stadium'}
+  ];
+
+  var VOCAB_BATHROOM = [
+    {es:'el baño / el cuarto de baño', en:'bathroom'},
+    {es:'el cepillo (de dientes)', en:'brush (toothbrush)'},
+    {es:'el champú', en:'shampoo'},
+    {es:'la crema de afeitar', en:'shaving cream'},
+    {es:'la ducha', en:'shower'},
+    {es:'el desodorante', en:'deodorant'},
+    {es:'el espejo', en:'mirror'},
+    {es:'el inodoro', en:'toilet'},
+    {es:'el jabón', en:'soap'},
+    {es:'el lavabo', en:'sink'},
+    {es:'el maquillaje', en:'makeup'},
+    {es:'la pasta de dientes', en:'toothpaste'},
+    {es:'el peine', en:'comb'},
+    {es:'el secador de pelo', en:'hair dryer'},
+    {es:'la toalla', en:'towel'}
+  ];
+
+  var VOCAB_ROUTINE = [
+    {es:'el despertador', en:'alarm clock'},
+    {es:'las pantuflas', en:'house slippers'},
+    {es:'la rutina diaria', en:'daily routine'},
+    {es:'por la mañana', en:'in the morning'},
+    {es:'por la tarde', en:'in the afternoon'},
+    {es:'por la noche', en:'in the evening, at night'},
+    {es:'antes (de)', en:'before', note:'A verb that follows "de" always stays in the infinitive.'},
+    {es:'después (de)', en:'after', note:'A verb that follows "de" always stays in the infinitive.'},
+    {es:'después', en:'afterwards, then'},
+    {es:'durante', en:'during, for (an amount of time)'},
+    {es:'primero', en:'first'},
+    {es:'entonces', en:'then, so'},
+    {es:'luego', en:'later, then'},
+    {es:'más tarde', en:'later on'},
+    {es:'por último', en:'finally'},
+    {es:'a veces', en:'sometimes'},
+    {es:'frecuentemente', en:'frequently'},
+    {es:'generalmente', en:'generally'},
+    {es:'normalmente', en:'normally'},
+    {es:'apagar la luz', en:'to turn off the light'},
+    {es:'encender la luz', en:'to turn on the light'}
+  ];
+
+  var RULES = {
+    'ser-estar': {title:'Ser vs. Estar', explanation:'Both verbs mean "to be," but they aren\'t interchangeable. Use ser for identity, characteristics, origin, profession, possession, material, and dates or time. Use estar for location, health, emotional state, and conditions that can change.', example:{es:'Juan es delgado, pero hoy está más delgado.', en:'Juan is thin (a lasting trait), but today he looks thinner (a change you notice).'}},
+    'articles': {title:'Articles', explanation:'Every Spanish noun has a gender (masculine or feminine) and a number (singular or plural), and its article has to match both. Definite articles (el/la/los/las) mean "the"; indefinite articles (un/una/unos/unas) mean "a/an" or "some."', example:{es:'el gimnasio → los gimnasios; una tienda → unas tiendas', en:'the gym → the gyms; a store → some stores'}},
+    'adjectives': {title:'Adjectives & Possessives', explanation:'Descriptive adjectives agree in gender and number with the noun and usually follow it. A few — bueno, malo, grande — shorten before a masculine singular noun. Possessives (mi, tu, su, nuestro...) always come before the noun they modify.', example:{es:'un buen amigo, una gran idea, nuestros amigos', en:'a good friend, a great idea, our friends'}},
+    'indef-neg': {title:'Indefinite & Negative Words', explanation:'Spanish allows — even expects — more than one negative word in a sentence. Put the negative word before the verb, or put "no" before the verb and the negative word after. Alguien/nadie/alguno/ninguno also take the personal a when they stand for a person.', example:{es:'No le escribo a nadie. / Nunca le escribo a nadie.', en:'I never write to anyone. (Both word orders are correct.)'}},
+    'pero-sino': {title:'Pero vs. Sino', explanation:'Pero is a plain "but." Sino means "but rather," and it only shows up when the first clause is negative and the second one directly replaces or contradicts it.', example:{es:'No es mi hermano, sino mi primo.', en:'He\'s not my brother, but rather my cousin.'}},
+    'regular-verbs': {title:'Regular Verbs', explanation:'Regular -ar, -er, and -ir verbs each follow one predictable ending pattern in the present tense. Learn the pattern once and it applies to hundreds of verbs.', example:{es:'hablar → hablo, hablas, habla...', en:'to speak → I speak, you speak, he/she speaks...'}},
+    'tener-venir': {title:'Tener & Venir', explanation:'Tener ("to have") and venir ("to come") are e→ie stem-changing verbs with an irregular yo form (tengo, vengo). Tener also drives a long list of idioms where English uses "to be" instead of "to have."', example:{es:'Tengo hambre y tengo prisa.', en:'I\'m hungry and I\'m in a hurry.'}},
+    'ir-verb': {title:'The Verb Ir', explanation:'Ir ("to go") is irregular in every form. "Ir a + infinitive" expresses a near-future plan (going to do something), and "vamos a + infinitive" doubles as "let\'s do something."', example:{es:'Voy a estudiar. ¡Vamos a comer!', en:'I\'m going to study. Let\'s eat!'}},
+    'stem-changing': {title:'Stem-Changing Verbs', explanation:'In these verbs the stressed vowel changes in every form except nosotros/vosotros: e→ie, o→ue, or e→i. Some also carry an irregular yo form on top of that (traigo, oigo, digo).', example:{es:'pensar → pienso, pensamos', en:'to think → I think, we think (no change for "we")'}},
+    'vocab-places': {title:'Places', explanation:'Core vocabulary for talking about where things happen or where you\'re going.'},
+    'vocab-food': {title:'Food', explanation:'Core vocabulary for meals and the things you eat.'},
+    'vocab-feelings': {title:'Estar + Emotions', explanation:'These adjectives pair with estar because they describe a state or condition, not a fixed trait.'},
+    'reflexive-verbs': {title:'Reflexive Verbs', explanation:'A reflexive verb needs a reflexive pronoun (me/te/se/nos/os/se) that matches the subject, because the subject is doing the action to itself. Most daily-routine verbs — waking up, showering, getting dressed — work this way in Spanish.', example:{es:'Me despierto, te despiertas, se despierta...', en:'I wake (myself) up, you wake up, he/she wakes up...'}},
+    'gustar-verbs': {title:'Verbs Like Gustar', explanation:'These verbs flip the English sentence structure: the thing doing the boring/mattering/interesting is the grammatical subject, and the person is an indirect object (me, te, le, nos, os, les).', example:{es:'Me interesan las novelas.', en:'Literally "Novels are interesting to me" = I\'m interested in novels.'}},
+    'vocab-people': {title:'People & Things', explanation:'Vocabulary for identifying people and everyday objects.'},
+    'vocab-personality': {title:'Personality', explanation:'Descriptive adjectives for personality and appearance — remember, these agree in gender and number.'},
+    'vocab-activities': {title:'Activities', explanation:'Common verbs and phrases for everyday activities.'},
+    'vocab-places-2': {title:'More Places', explanation:'More vocabulary for places you go in daily life.'},
+    'vocab-bathroom': {title:'In the Bathroom', explanation:'Vocabulary for talking about your morning routine.'},
+    'vocab-routine': {title:'Routine & Sequence Words', explanation:'Words that put your daily routine in order. A verb that follows "de" (antes de, después de) always stays in the infinitive.'}
+  };
+
+  var METHODS = [
+    {id:'flashcards', title:'Flashcards', icon:'🗂️', blurb:'Flip a virtual notecard: see the prompt, try to recall the answer before you reveal it, then rate yourself honestly. The classic notecard method — self-testing before checking beats just re-reading.'},
+    {id:'typed-drill', title:'Fill-in-the-Blank', icon:'⌨️', blurb:'Type every answer from memory — no multiple-choice safety net. Producing an answer yourself is harder, and more effective, than just recognizing it (a "desirable difficulty").'},
+    {id:'mc-drill', title:'Multiple Choice Drill', icon:'☑️', blurb:'A lower-pressure warm-up: recognize the right answer among a few options. Good for a first pass on new material before you\'re ready to produce it from scratch.'},
+    {id:'matching', title:'Matching Pairs', icon:'🔗', blurb:'Match each Spanish term to its meaning. Actively building the connection yourself, instead of just seeing the two side by side, makes the pairing stick ("elaborative encoding").'}
+  ];
+
+  var NAV_ITEMS = [
+    {id:'home', label:'Home'},
+    {id:'study', label:'Study'},
+    {id:'quiz', label:'Quiz'},
+    {id:'test', label:'Test'},
+    {id:'guided', label:'Guided Exercises'},
+    {id:'methods', label:'Study Methods'}
+  ];
+
+  /* ============================= ITEM BUILDERS ============================= */
+  function stripArticle(es){ return es.replace(/^(el|la|los|las)\s+/i,''); }
+
+  function conjItems(verbs, topic){
+    var out = [];
+    verbs.forEach(function(v){
+      PRONOUNS.forEach(function(p, i){
+        out.push({
+          id:'conj-'+topic+'-'+v.inf+'-'+i,
+          topic:topic, type:'conjugate',
+          prompt: p+' — <b>'+v.inf+'</b> <span class="gloss">('+v.en+')</span>',
+          answer:[v.forms[i]],
+          choices: shuffled(v.forms)
+        });
+      });
+    });
+    return out;
+  }
+
+  function irregVerbVocab(verbs, topic){
+    var out = [];
+    verbs.forEach(function(v, i){
+      out.push({id:'infen-'+topic+'-'+i, topic:topic, type:'vocab-es2en', prompt:v.inf, answer:[v.en], pool:verbs.map(function(x){return x.en;})});
+      out.push({id:'infes-'+topic+'-'+i, topic:topic, type:'vocab-en2es', prompt:v.en, answer:[v.inf], pool:verbs.map(function(x){return x.inf;})});
+    });
+    return out;
+  }
+
+  function vocabItems(list, topic){
+    var out = [];
+    var esPool = list.map(function(w){return w.es;});
+    var enPool = list.map(function(w){return w.en;});
+    list.forEach(function(w, i){
+      out.push({id:'v-e2n-'+topic+'-'+i, topic:topic, type:'vocab-es2en', prompt:w.es, answer:[w.en], icon:w.icon, note:w.note, pool:enPool});
+      out.push({id:'v-n2e-'+topic+'-'+i, topic:topic, type:'vocab-en2es', prompt:w.en, answer:[w.es], icon:w.icon, note:w.note, pool:esPool});
+    });
+    return out;
+  }
+
+  function buildReflexiveItems(){
+    var out = conjItems(REFLEXIVE_VERBS, 'reflexive-verbs').concat(irregVerbVocab(REFLEXIVE_VERBS, 'reflexive-verbs'));
+    out.push({id:'refl-extra-e2n', topic:'reflexive-verbs', type:'vocab-es2en', prompt:'ponerse (+ adjetivo)', answer:['to become (adjective)']});
+    out.push({id:'refl-extra-n2e', topic:'reflexive-verbs', type:'vocab-en2es', prompt:'to become (+ adjective)', answer:['ponerse']});
+    return out;
+  }
+
+  function buildGustarItems(){
+    return irregVerbVocab(GUSTAR_VERBS, 'gustar-verbs');
+  }
+
+  function buildArticleItems(){
+    var out = [];
+    NOUNS.forEach(function(n, i){
+      var noun = stripArticle(n.es);
+      var defAns = n.g === 'm' ? (n.pl ? 'los' : 'el') : (n.pl ? 'las' : 'la');
+      out.push({id:'art-def-'+i, topic:'articles', type:'mc', prompt:'___ '+noun+' <span class="gloss">('+n.en+')</span>', answer:[defAns], choices:['el','la','los','las']});
+      var indefAns = n.g === 'm' ? (n.pl ? 'unos' : 'un') : (n.pl ? 'unas' : 'una');
+      out.push({id:'art-indef-'+i, topic:'articles', type:'mc', prompt:'___ '+noun+' <span class="gloss">('+n.en+')</span>', answer:[indefAns], choices:['un','una','unos','unas']});
+    });
+    return out;
+  }
+
+  function buildAdjectiveItems(){
+    var out = [];
+    PERSON_NOUNS.forEach(function(n, i){
+      ADJECTIVES.forEach(function(adj, j){
+        var key = (n.g === 'm' ? 'm' : 'f') + (n.pl ? 'p' : 's');
+        var correct = adj.forms[key];
+        var uniq = Array.from(new Set([adj.forms.ms, adj.forms.mp, adj.forms.fs, adj.forms.fp]));
+        out.push({
+          id:'adj-'+i+'-'+j, topic:'adjectives', type:'mc',
+          prompt: n.es+' <span class="gloss">('+n.en+')</span> — '+adj.base+' <span class="gloss">('+adj.en+')</span>',
+          answer:[correct], choices: uniq
+        });
+      });
+    });
+    SHORT_FORMS.forEach(function(s, i){
+      out.push({id:'adjshort-'+i, topic:'adjectives', type:'typed', prompt:s.prompt, answer:s.answer});
+    });
+    POSSESSIVES.forEach(function(p, i){
+      out.push({id:'poss-'+i, topic:'adjectives', type:'mc', prompt:p.prompt, answer:p.answer, choices:p.choices});
+    });
+    return out;
+  }
+
+  function buildSerEstarItems(){
+    var out = conjItems([{inf:'ser', en:'to be', forms:SER_FORMS}], 'ser-estar')
+      .concat(conjItems([{inf:'estar', en:'to be', forms:ESTAR_FORMS}], 'ser-estar'));
+    SER_ESTAR_ITEMS.forEach(function(it, i){
+      out.push({id:'se-use-'+i, topic:'ser-estar', type:'mc', prompt:it.prompt, answer:it.answer, choices:it.choices, note:it.note});
+    });
+    return out;
+  }
+
+  function buildIndefNegItems(){
+    var out = vocabItems(INDEF_WORDS, 'indef-neg');
+    INDEF_FILL_ITEMS.forEach(function(it, i){
+      out.push({id:'indef-fill-'+i, topic:'indef-neg', type:'mc', prompt:it.prompt, answer:[it.answer], choices:it.choices});
+    });
+    INDEF_PERSONAL_A_ITEMS.forEach(function(it, i){
+      out.push({id:'indef-pa-'+i, topic:'indef-neg', type:'mc', prompt:it.prompt, answer:[it.answer], choices:it.choices, note:it.note});
+    });
+    INDEF_TRANSFORM_ITEMS.forEach(function(it, i){
+      out.push({id:'indef-tx-'+i, topic:'indef-neg', type:'typed', prompt:'Make this sentence negative: <br><i>"'+it.prompt+'"</i>', answer:it.answers, forceTyped:true});
+    });
+    return out;
+  }
+
+  function buildPeroSinoItems(){
+    var out = [];
+    PERO_SINO_ITEMS.forEach(function(it, i){
+      out.push({
+        id:'pero-sino-'+i, topic:'pero-sino', type:'mc', prompt:it.prompt, answer:[it.answer], choices:it.choices,
+        note: it.answer === 'sino'
+          ? 'sino, because the first clause is negative and this one replaces/contradicts it.'
+          : 'pero, a plain "but" — the first clause here isn\'t negative (or doesn\'t get replaced).'
+      });
+    });
+    return out;
+  }
+
+  function buildRegularVerbItems(){
+    return conjItems(VERBS.regular, 'regular-verbs').concat(irregVerbVocab(VERBS.regular, 'regular-verbs'));
+  }
+
+  function buildTenerVenirItems(){
+    var out = conjItems(VERBS.tenerVenir, 'tener-venir');
+    var esPool = TENER_IDIOMS.map(function(w){return w.es;});
+    var enPool = TENER_IDIOMS.map(function(w){return w.en;});
+    TENER_IDIOMS.forEach(function(w, i){
+      out.push({id:'idiom-e2n-'+i, topic:'tener-venir', type:'vocab-es2en', prompt:w.es, answer:[w.en], pool:enPool});
+      out.push({id:'idiom-n2e-'+i, topic:'tener-venir', type:'vocab-en2es', prompt:w.en, answer:[w.es], pool:esPool});
+    });
+    return out;
+  }
+
+  function buildIrItems(){
+    var out = conjItems(VERBS.ir, 'ir-verb');
+    FUTURE_PLAN_ITEMS.forEach(function(it, i){
+      out.push({id:'irfut-'+i, topic:'ir-verb', type:'typed', prompt:'Translate to Spanish: <br><i>"'+it.prompt+'"</i>', answer:it.answers, forceTyped:true});
+    });
+    return out;
+  }
+
+  function buildStemChangingItems(){
+    return conjItems(VERBS.stemEIE, 'stem-changing')
+      .concat(conjItems(VERBS.stemOUE, 'stem-changing'))
+      .concat(conjItems(VERBS.jugar, 'stem-changing'))
+      .concat(conjItems(VERBS.stemEI, 'stem-changing'))
+      .concat(conjItems(VERBS.irregularYo, 'stem-changing'));
+  }
+
+  var ALL_ITEMS = []
+    .concat(buildSerEstarItems())
+    .concat(buildArticleItems())
+    .concat(buildAdjectiveItems())
+    .concat(buildIndefNegItems())
+    .concat(buildPeroSinoItems())
+    .concat(buildRegularVerbItems())
+    .concat(buildTenerVenirItems())
+    .concat(buildIrItems())
+    .concat(buildStemChangingItems())
+    .concat(vocabItems(VOCAB_PLACES, 'vocab-places'))
+    .concat(vocabItems(VOCAB_FOOD, 'vocab-food'))
+    .concat(vocabItems(VOCAB_FEELINGS, 'vocab-feelings'))
+    .concat(buildReflexiveItems())
+    .concat(buildGustarItems())
+    .concat(vocabItems(VOCAB_PEOPLE, 'vocab-people'))
+    .concat(vocabItems(VOCAB_PERSONALITY, 'vocab-personality'))
+    .concat(vocabItems(VOCAB_ACTIVITIES, 'vocab-activities'))
+    .concat(vocabItems(VOCAB_PLACES2, 'vocab-places-2'))
+    .concat(vocabItems(VOCAB_BATHROOM, 'vocab-bathroom'))
+    .concat(vocabItems(VOCAB_ROUTINE, 'vocab-routine'));
+
+  var ITEMS_BY_TOPIC = {};
+  ALL_ITEMS.forEach(function(it){
+    if(!ITEMS_BY_TOPIC[it.topic]) ITEMS_BY_TOPIC[it.topic] = [];
+    ITEMS_BY_TOPIC[it.topic].push(it);
+  });
+
+  /* ============================= UTIL ============================= */
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function el(tag, cls, html){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(html !== undefined) e.innerHTML = html;
+    return e;
+  }
+  function stripHtml(html){
+    return String(html).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function shuffled(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+  function sample(arr, n){ return shuffled(arr).slice(0, n); }
+  function normalize(s){
+    return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[¿?¡!.,]/g,'').replace(/\s+/g,' ').trim();
+  }
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function daysFromToday(n){
+    var d = new Date();
+    d.setDate(d.getDate()+n);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  /* ============================= PROGRESS / SRS ============================= */
+  var STORE_KEY = 'fichero_progress_v1';
+  var INTERVALS = [0,1,3,7,14,30];
+
+  function loadProgress(){
+    try{
+      var raw = localStorage.getItem(STORE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return {items:{}, streak:{count:0,last:null}};
+  }
+  var PROGRESS = loadProgress();
+
+  function saveProgress(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
+  }
+
+  function getProg(id){ return PROGRESS.items[id]; }
+
+  function recordAnswer(id, correct){
+    var p = PROGRESS.items[id] || {box:-1, due:todayStr(), seen:0, correct:0, incorrect:0};
+    p.seen++;
+    if(correct){
+      p.correct++;
+      p.box = Math.min((p.box<0?-1:p.box)+1, 5);
+      p.due = daysFromToday(INTERVALS[Math.max(p.box,0)]);
+    }else{
+      p.incorrect++;
+      p.box = 0;
+      p.due = todayStr();
+    }
+    PROGRESS.items[id] = p;
+    bumpStreak();
+    saveProgress();
+  }
+
+  function seedLearn(id, gotIt){
+    var p = PROGRESS.items[id] || {box:-1, due:todayStr(), seen:0, correct:0, incorrect:0};
+    p.seen++;
+    if(gotIt){ p.box = Math.max(p.box,1); p.due = daysFromToday(INTERVALS[1]); }
+    else { p.box = 0; p.due = todayStr(); }
+    PROGRESS.items[id] = p;
+    bumpStreak();
+    saveProgress();
+  }
+
+  function bumpStreak(){
+    var t = todayStr();
+    var s = PROGRESS.streak;
+    if(s.last === t) return;
+    if(s.last){
+      var y = new Date(); y.setDate(y.getDate()-1);
+      var yStr = y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+      s.count = (s.last === yStr) ? s.count+1 : 1;
+    } else {
+      s.count = 1;
+    }
+    s.last = t;
+  }
+
+  function isMastered(id){ var p = getProg(id); return p && p.box >= 3; }
+  function isDue(id){ var p = getProg(id); return !p || p.due <= todayStr(); }
+  function isUnseen(id){ var p = getProg(id); return !p; }
+  function boxOf(id){ var p = getProg(id); return p ? p.box : -1; }
+
+  function topicMastery(topicId){
+    var items = ITEMS_BY_TOPIC[topicId] || [];
+    if(!items.length) return 0;
+    var m = items.filter(function(it){ return isMastered(it.id); }).length;
+    return Math.round(100*m/items.length);
+  }
+  function overallMastery(){
+    var m = ALL_ITEMS.filter(function(it){ return isMastered(it.id); }).length;
+    return Math.round(100*m/ALL_ITEMS.length);
+  }
+  function masteredCount(){ return ALL_ITEMS.filter(function(it){ return isMastered(it.id); }).length; }
+  function categoryMastery(cat){
+    var items = ALL_ITEMS.filter(function(it){ return TOPIC_MAP[it.topic].cat === cat; });
+    if(!items.length) return 0;
+    var m = items.filter(function(it){ return isMastered(it.id); }).length;
+    return Math.round(100*m/items.length);
+  }
+  function mcCapablePool(pool){
+    return pool.filter(function(it){ return !!(it.choices || it.pool); });
+  }
+
+  /* ============================= SESSION SELECTION ============================= */
+  // preferSeen biases toward already-studied items (for Test mode) without
+  // ever shrinking the pool — a topic that's barely been touched still fills
+  // its full quota by falling back to unseen items rather than coming up short.
+  function pickWeighted(pool, n, preferSeen){
+    var scored = pool.map(function(it){
+      var due = isDue(it.id) ? 1 : 0;
+      var unseen = isUnseen(it.id);
+      var unseenScore = preferSeen ? (unseen ? -1 : 0) : (unseen ? 1 : 0);
+      return {it:it, score: due*2 + unseenScore + Math.random()*0.6};
+    });
+    scored.sort(function(a,b){ return b.score-a.score; });
+    var top = scored.slice(0, Math.max(n*3, Math.min(20,pool.length)));
+    return shuffled(top).slice(0,n).map(function(x){ return x.it; });
+  }
+
+  function pickTopicSession(topicId, n){
+    return pickWeighted(ITEMS_BY_TOPIC[topicId]||[], n);
+  }
+
+  function pickMixedSession(n, preferSeen){
+    var pools = TOPICS.map(function(t){ return ITEMS_BY_TOPIC[t.id]||[]; });
+    var quota = Math.floor(n/pools.length);
+    var remainder = n - quota*pools.length;
+    var out = [];
+    pools.forEach(function(p, i){
+      var take = quota + (i<remainder?1:0);
+      out = out.concat(pickWeighted(p, take, preferSeen));
+    });
+    return shuffled(out);
+  }
+
+  /* ============================= QUESTION RENDERING LOGIC ============================= */
+  function renderMode(item, forceMode){
+    if(forceMode) return forceMode;
+    if(item.forceTyped) return 'typed';
+    if(item.type === 'typed') return 'typed';
+    if(item.type === 'mc') return 'mc';
+    var box = boxOf(item.id);
+    return box >= 2 ? 'typed' : 'mc';
+  }
+
+  function distractorsFor(item){
+    if(item.choices) return item.choices;
+    if(item.pool){
+      var others = item.pool.filter(function(v){ return v !== item.answer[0]; });
+      return sample(others, Math.min(3, others.length)).concat(item.answer);
+    }
+    return item.answer;
+  }
+
+  // Mode (mc vs typed) and, for mc, the exact option set must be frozen the
+  // moment a question is shown — both are derived from mutable SRS state
+  // (box level) or randomness, and re-deriving them on the post-answer
+  // re-render would silently change the question under the feedback.
+  function prepQuestion(item, forceMode){
+    var mode = renderMode(item, forceMode);
+    var opts = null;
+    if(mode === 'mc'){
+      opts = shuffled(distractorsFor(item)).slice(0,4);
+      if(opts.indexOf(item.answer[0]) === -1) opts[0] = item.answer[0];
+      opts = shuffled(opts);
+    }
+    return {mode:mode, opts:opts};
+  }
+
+  /* ============================= APP STATE / ROUTER ============================= */
+  var state = { view:'home', infoOpen:false };
+  var app = $('#app');
+
+  function go(view, extra){
+    state.view = view;
+    Object.assign(state, extra||{});
+    render();
+    window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
+  }
+
+  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1};
+
+  function render(){
+    app.innerHTML = '';
+    app.appendChild(topbar());
+    if(HUB_VIEWS[state.view]) app.appendChild(navBar());
+    if(state.infoOpen) app.appendChild(infoPanel());
+    if(state.view === 'home') app.appendChild(homeView());
+    else if(state.view === 'study') app.appendChild(studyView());
+    else if(state.view === 'quiz') app.appendChild(quizView());
+    else if(state.view === 'test') app.appendChild(testView());
+    else if(state.view === 'guided') app.appendChild(guidedView());
+    else if(state.view === 'guidedIntro') app.appendChild(guidedIntroView());
+    else if(state.view === 'methods') app.appendChild(methodsView());
+    else if(state.view === 'methodPicker') app.appendChild(methodPickerView());
+    else if(state.view === 'learn') app.appendChild(learnView());
+    else if(state.view === 'session') app.appendChild(sessionView());
+    else if(state.view === 'results') app.appendChild(resultsView());
+    else if(state.view === 'matching') app.appendChild(matchingView());
+  }
+
+  function ringSvg(pct, size){
+    size = size||44;
+    var r = (size-6)/2, c = size/2, circ = 2*Math.PI*r;
+    var off = circ*(1-pct/100);
+    var color = 'var(--accent-pine)';
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'
+      + '<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="var(--surface-2)" stroke-width="4"/>'
+      + '<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="4" stroke-linecap="round" '
+      + 'stroke-dasharray="'+circ+'" stroke-dashoffset="'+off+'"/></svg>';
+  }
+
+  function topbar(){
+    var bar = el('div','topbar');
+    var brand = el('button','brand');
+    brand.innerHTML = '<h1>Fichero de Español</h1><div class="sub">Senderos 2 · Lección Preliminar, Lección 1 &amp; Unidad 1</div>';
+    brand.onclick = function(){ go('home'); };
+    bar.appendChild(brand);
+
+    var stats = el('div','top-stats');
+    var streakChip = el('div','chip');
+    var streakCount = PROGRESS.streak.count||0;
+    streakChip.innerHTML = '🔥 <span class="num">'+streakCount+'</span> day'+(streakCount===1?'':'s');
+    stats.appendChild(streakChip);
+
+    var ringWrap = el('div','ring-wrap');
+    var pct = overallMastery();
+    ringWrap.innerHTML = ringSvg(pct)+'<div class="pct mono">'+pct+'%</div>';
+    ringWrap.title = 'Overall mastery';
+    stats.appendChild(ringWrap);
+
+    var infoBtn = el('button','info-btn','i');
+    infoBtn.title = 'How this works';
+    infoBtn.onclick = function(){ state.infoOpen = !state.infoOpen; render(); };
+    stats.appendChild(infoBtn);
+
+    bar.appendChild(stats);
+    return bar;
+  }
+
+  function navBar(){
+    var bar = el('div','nav-bar');
+    NAV_ITEMS.forEach(function(n){
+      var active = state.view === n.id || (n.id==='guided' && state.view==='guidedIntro') || (n.id==='methods' && state.view==='methodPicker');
+      var b = el('button','nav-btn'+(active?' active':''), n.label);
+      b.onclick = function(){ go(n.id); };
+      bar.appendChild(b);
+    });
+    return bar;
+  }
+
+  function infoPanel(){
+    var p = el('div','info-panel');
+    p.innerHTML = '<h3>How This App Works</h3><ul>'
+      + '<li><b>Spaced Repetition:</b> a card comes back right around when you\'re about to forget it — not before, not after.</li>'
+      + '<li><b>Active Recall:</b> you answer before you see the answer. Pulling something out of memory yourself cements it better than re-reading it.</li>'
+      + '<li><b>Interleaving:</b> Quiz and Test mix grammar and vocabulary on purpose — mixed practice sticks better than one topic at a time.</li>'
+      + '<li><b>Progressive Difficulty:</b> new material starts as multiple choice; once you\'ve got it, you start typing it from memory.</li>'
+      + '<li><b>Worked Examples:</b> Guided Exercises show you the rule and a solved example before asking you to do it yourself — support that fades as you improve.</li>'
+      + '<li><b>Elaborative Encoding:</b> actively matching a term to its meaning (Matching Pairs) builds a stronger memory link than just seeing them side by side.</li>'
+      + '</ul>';
+    return p;
+  }
+
+  function statTile(value, label){
+    var t = el('div','stat-tile');
+    t.appendChild(el('div','stat-value mono', value));
+    t.appendChild(el('div','stat-label', label));
+    return t;
+  }
+
+  function categoryBar(catId, catLabel){
+    var pct = categoryMastery(catId);
+    var row = el('div','cat-bar-row');
+    row.appendChild(el('div','cat-bar-name', catLabel));
+    var track = el('div','mastery-bar');
+    var fill = el('div','mastery-fill cat-'+catId); fill.style.width = pct+'%';
+    track.appendChild(fill);
+    row.appendChild(track);
+    row.appendChild(el('div','mastery-pct mono', pct+'%'));
+    return row;
+  }
+
+  function homeView(){
+    var wrap = el('div','');
+
+    wrap.appendChild(el('div','section-label','Your Progress'));
+    var statGrid = el('div','stat-grid');
+    statGrid.appendChild(statTile(overallMastery()+'%', 'Overall Mastery'));
+    statGrid.appendChild(statTile(masteredCount()+' / '+ALL_ITEMS.length, 'Cards Mastered'));
+    statGrid.appendChild(statTile(String(PROGRESS.streak.count||0), (PROGRESS.streak.count===1?'Day Streak':'Day Streak')));
+    wrap.appendChild(statGrid);
+
+    var catBars = el('div','cat-bars');
+    catBars.appendChild(categoryBar('grammar','Grammar'));
+    catBars.appendChild(categoryBar('verbs','Verbs'));
+    catBars.appendChild(categoryBar('vocab','Vocabulary'));
+    wrap.appendChild(catBars);
+
+    wrap.appendChild(el('div','section-label','Jump In'));
+    var jumpGrid = el('div','jump-grid');
+    var jumpItems = [
+      {title:'Study', desc:'Flip through flashcards at your own pace.', view:'study'},
+      {title:'Quiz', desc:'A short, mixed check with instant feedback.', view:'quiz'},
+      {title:'Test', desc:'A longer, harder check — closer to the real exam.', view:'test'},
+      {title:'Guided Exercises', desc:'See the rule explained, then practice it.', view:'guided'},
+      {title:'Study Methods', desc:'Fill-in-the-blank, multiple choice, matching, and more.', view:'methods'}
+    ];
+    jumpItems.forEach(function(j){
+      var card = el('div','global-card');
+      card.innerHTML = '<h3>'+j.title+'</h3><p>'+j.desc+'</p>';
+      var btn = el('button','btn btn-primary btn-block','Open →');
+      btn.onclick = function(){ go(j.view); };
+      card.appendChild(btn);
+      jumpGrid.appendChild(card);
+    });
+    wrap.appendChild(jumpGrid);
+
+    wrap.appendChild(el('div','section-label','Topics'));
+    var grid = el('div','dash-grid');
+    TOPICS.forEach(function(t){
+      var items = ITEMS_BY_TOPIC[t.id]||[];
+      var mastery = topicMastery(t.id);
+      var card = el('div','topic-card');
+      card.appendChild(el('div','topic-tab cat-'+t.cat));
+      var body = el('div','topic-body cat-'+t.cat);
+      body.appendChild(el('div','topic-title', t.name));
+      body.appendChild(el('div','topic-blurb', t.blurb));
+      var mrow = el('div','mastery-row');
+      var track = el('div','mastery-bar');
+      var fill = el('div','mastery-fill'); fill.style.width = mastery+'%';
+      track.appendChild(fill);
+      mrow.appendChild(track);
+      mrow.appendChild(el('span','mono',mastery+'%'));
+      body.appendChild(mrow);
+      body.appendChild(el('div','', '<span class="gloss">'+items.length+' cards</span>'));
+      var practiceBtn = el('button','btn btn-sm btn-ghost btn-block', 'Practice →');
+      practiceBtn.onclick = function(){ startSession('quiz', pickTopicSession(t.id, 8), 'Quiz — '+t.name); };
+      body.appendChild(practiceBtn);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+
+    var footer = el('div','footer-links');
+    var resetBtn = el('button','','Reset Progress');
+    resetBtn.onclick = function(){
+      if(confirm('Delete all progress saved in this browser?')){
+        PROGRESS = {items:{}, streak:{count:0,last:null}};
+        saveProgress();
+        render();
+      }
+    };
+    footer.appendChild(resetBtn);
+    wrap.appendChild(footer);
+
+    return wrap;
+  }
+
+  /* ---------- reusable "all topics + pick a topic" page ---------- */
+  function pickerView(cfg){
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title', cfg.title));
+    wrap.appendChild(el('p','page-desc', cfg.description));
+    var primaryBtn = el('button','btn btn-primary btn-lg', cfg.primaryLabel);
+    primaryBtn.onclick = cfg.onPrimary;
+    wrap.appendChild(primaryBtn);
+
+    wrap.appendChild(el('div','section-label','By Topic'));
+    var grid = el('div','dash-grid');
+    TOPICS.forEach(function(t){
+      var mastery = topicMastery(t.id);
+      var card = el('div','topic-card');
+      card.appendChild(el('div','topic-tab cat-'+t.cat));
+      var body = el('div','topic-body cat-'+t.cat);
+      body.appendChild(el('div','topic-title', t.name));
+      var mrow = el('div','mastery-row');
+      var track = el('div','mastery-bar');
+      var fill = el('div','mastery-fill'); fill.style.width = mastery+'%';
+      track.appendChild(fill);
+      mrow.appendChild(track);
+      mrow.appendChild(el('span','mono',mastery+'%'));
+      body.appendChild(mrow);
+      var btn = el('button','btn btn-sm btn-block', cfg.topicButtonLabel);
+      btn.onclick = function(){ cfg.onTopic(t.id); };
+      body.appendChild(btn);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  function studyView(){
+    return pickerView({
+      title:'Study (Flashcards)',
+      description:'Flip through notecards for a topic. Try to recall the answer before you flip, then rate yourself — that honest self-check is what schedules when the card comes back to you (spaced repetition).',
+      primaryLabel:'Study — All Topics',
+      onPrimary:function(){ go('learn', {topicId:null, learnIdx:0, learnItems: pickWeighted(ALL_ITEMS, 25), scopeLabel:'All Topics'}); },
+      topicButtonLabel:'Study',
+      onTopic:function(tid){ go('learn', {topicId:tid, learnIdx:0, learnItems: shuffled(ITEMS_BY_TOPIC[tid]), scopeLabel:TOPIC_MAP[tid].name}); }
+    });
+  }
+
+  function quizView(){
+    return pickerView({
+      title:'Quiz',
+      description:'A short, interleaved check that mixes grammar and vocabulary together, weighted toward what you\'re close to forgetting. Mixed practice sticks better than drilling one topic in a block.',
+      primaryLabel:'Quiz — All Topics (12 questions)',
+      onPrimary:function(){ startSession('quiz', pickMixedSession(12,false), 'Quiz — All Topics'); },
+      topicButtonLabel:'Quiz This Topic',
+      onTopic:function(tid){ startSession('quiz', pickTopicSession(tid,8), 'Quiz — '+TOPIC_MAP[tid].name); }
+    });
+  }
+
+  function testView(){
+    return pickerView({
+      title:'Test',
+      description:'A longer, more demanding check with more type-it-yourself questions — closer to what an actual exam asks of you.',
+      primaryLabel:'Test — All Topics (30 questions)',
+      onPrimary:function(){ startSession('test', pickMixedSession(30,true), 'Test — All Topics'); },
+      topicButtonLabel:'Test This Topic',
+      onTopic:function(tid){ startSession('test', pickTopicSession(tid,15), 'Test — '+TOPIC_MAP[tid].name); }
+    });
+  }
+
+  function guidedView(){
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title','Guided Exercises'));
+    wrap.appendChild(el('p','page-desc','Pick a topic to see the rule explained first, with a worked example, then practice it with hints available. Worked examples cut down on guesswork while a rule is still new — the support fades as you get comfortable.'));
+    wrap.appendChild(el('div','section-label','By Topic'));
+    var grid = el('div','dash-grid');
+    TOPICS.forEach(function(t){
+      var mastery = topicMastery(t.id);
+      var card = el('div','topic-card');
+      card.appendChild(el('div','topic-tab cat-'+t.cat));
+      var body = el('div','topic-body cat-'+t.cat);
+      body.appendChild(el('div','topic-title', t.name));
+      var mrow = el('div','mastery-row');
+      var track = el('div','mastery-bar');
+      var fill = el('div','mastery-fill'); fill.style.width = mastery+'%';
+      track.appendChild(fill);
+      mrow.appendChild(track);
+      mrow.appendChild(el('span','mono',mastery+'%'));
+      body.appendChild(mrow);
+      var btn = el('button','btn btn-sm btn-block', 'Start');
+      btn.onclick = function(){ go('guidedIntro', {topicId:t.id}); };
+      body.appendChild(btn);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  function guidedIntroView(){
+    var t = TOPIC_MAP[state.topicId];
+    var rule = RULES[t.id] || {title:t.name, explanation:t.blurb};
+    var wrap = el('div','');
+    var back = el('button','back-btn','← Back to Guided Exercises');
+    back.onclick = function(){ go('guided'); };
+    wrap.appendChild(back);
+
+    var card = el('div','session-card rule-card');
+    card.appendChild(el('h2','page-title', rule.title || t.name));
+    card.appendChild(el('p','rule-text', rule.explanation));
+    if(rule.example){
+      var ex = el('div','rule-example');
+      ex.innerHTML = '<div class="rule-example-es">'+escapeHtml(rule.example.es)+'</div><div class="gloss">'+escapeHtml(rule.example.en)+'</div>';
+      card.appendChild(ex);
+    }
+    var startBtn = el('button','btn btn-primary btn-lg btn-block','Begin Practice');
+    startBtn.onclick = function(){ startSession('guided', pickWeighted(ITEMS_BY_TOPIC[t.id], 8), 'Guided — '+t.name); };
+    card.appendChild(startBtn);
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  function methodsView(){
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title','Study Methods'));
+    wrap.appendChild(el('p','page-desc','Different ways to practice the same material. Switching how you practice, not just what, is its own kind of desirable difficulty.'));
+    var grid = el('div','dash-grid');
+    METHODS.forEach(function(m){
+      var card = el('div','topic-card');
+      var body = el('div','topic-body');
+      body.appendChild(el('div','method-icon', m.icon));
+      body.appendChild(el('div','topic-title', m.title));
+      body.appendChild(el('div','topic-blurb', m.blurb));
+      var btn = el('button','btn btn-primary btn-block','Choose Topic →');
+      btn.onclick = function(){ go('methodPicker', {methodId:m.id}); };
+      body.appendChild(btn);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  function methodPickerView(){
+    var m = METHODS.filter(function(x){ return x.id === state.methodId; })[0];
+    return pickerView({
+      title: m.title,
+      description: m.blurb,
+      primaryLabel: m.title+' — All Topics',
+      onPrimary:function(){ startMethod(m.id, null); },
+      topicButtonLabel:'Start',
+      onTopic:function(tid){ startMethod(m.id, tid); }
+    });
+  }
+
+  function startMethod(methodId, topicId){
+    var pool = topicId ? (ITEMS_BY_TOPIC[topicId]||[]) : ALL_ITEMS;
+    var label = topicId ? TOPIC_MAP[topicId].name : 'All Topics';
+    if(methodId === 'flashcards'){
+      var items = topicId ? shuffled(pool) : pickWeighted(pool, 25);
+      go('learn', {topicId:topicId, learnIdx:0, learnItems:items, scopeLabel:label});
+    } else if(methodId === 'typed-drill'){
+      startSession('typed-drill', pickWeighted(pool, topicId?10:15), 'Fill-in-the-Blank — '+label, 'typed');
+    } else if(methodId === 'mc-drill'){
+      startSession('mc-drill', pickWeighted(mcCapablePool(pool), topicId?10:15), 'Multiple Choice Drill — '+label, 'mc');
+    } else if(methodId === 'matching'){
+      startMatching(pickWeighted(pool, 6), 'Matching Pairs — '+label, pool);
+    }
+  }
+
+  /* ---------- MATCHING PAIRS ---------- */
+  function startMatching(items, label, scopePool){
+    if(items.length < 2) return;
+    var cards = [];
+    items.forEach(function(it){
+      cards.push({cardId:it.id+'-p', itemId:it.id, side:'p', html:escapeHtml(stripHtml(it.prompt)), matched:false});
+      cards.push({cardId:it.id+'-a', itemId:it.id, side:'a', html:escapeHtml(it.answer[0]), matched:false});
+    });
+    go('matching', {matchLabel:label, matchItems:items, matchCards:shuffled(cards), matchSelected:[], matchWrong:[], matchMistakes:{}, matchDone:false, matchScopePool:scopePool||ALL_ITEMS});
+  }
+
+  function matchingView(){
+    var wrap = el('div','');
+    var back = el('button','back-btn','← Exit');
+    back.onclick = function(){ go('methods'); };
+    wrap.appendChild(back);
+
+    var card = el('div','session-card');
+    card.appendChild(el('div','q-prompt', state.matchLabel||'Matching Pairs'));
+
+    var matchedCount = state.matchCards.filter(function(c){return c.matched;}).length;
+    card.appendChild(el('div','progress-text mono', (matchedCount/2)+' / '+(state.matchCards.length/2)+' matched'));
+
+    if(state.matchDone){
+      var allCorrect = state.matchItems.every(function(it){ return !state.matchMistakes[it.id]; });
+      var fb = el('div','feedback '+(allCorrect?'correct':'incorrect'));
+      fb.appendChild(el('span','fmark', allCorrect?'✓':'★'));
+      fb.appendChild(el('div','', allCorrect ? '<b>Perfect round — no mismatches!</b>' : '<b>All matched.</b> A few took more than one try — those are now scheduled to come back sooner.'));
+      card.appendChild(fb);
+      var footer = el('div','session-footer');
+      var again = el('button','btn btn-primary','Play Again');
+      again.onclick = function(){ startMatching(pickWeighted(state.matchScopePool||ALL_ITEMS, 6), state.matchLabel, state.matchScopePool); };
+      var exit = el('button','btn btn-ghost','Back to Home');
+      exit.onclick = function(){ go('home'); };
+      footer.appendChild(exit);
+      footer.appendChild(again);
+      card.appendChild(footer);
+    } else {
+      var grid = el('div','match-grid');
+      state.matchCards.forEach(function(c){
+        var tile = el('button','match-tile', c.html);
+        if(c.matched) tile.classList.add('matched');
+        if(state.matchSelected.indexOf(c.cardId) !== -1) tile.classList.add('selected');
+        if(state.matchWrong.indexOf(c.cardId) !== -1) tile.classList.add('wrong');
+        tile.disabled = c.matched || state.matchWrong.length>0;
+        tile.onclick = function(){ handleMatchClick(c.cardId); };
+        grid.appendChild(tile);
+      });
+      card.appendChild(grid);
+    }
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  function handleMatchClick(cardId){
+    var cards = state.matchCards;
+    var clicked = cards.filter(function(c){return c.cardId===cardId;})[0];
+    if(!clicked || clicked.matched || state.matchSelected.indexOf(cardId)!==-1) return;
+    state.matchSelected.push(cardId);
+    if(state.matchSelected.length < 2){ render(); return; }
+
+    var aId = state.matchSelected[0], bId = state.matchSelected[1];
+    var a = cards.filter(function(c){return c.cardId===aId;})[0];
+    var b = cards.filter(function(c){return c.cardId===bId;})[0];
+    var isMatch = a.itemId === b.itemId && a.side !== b.side;
+
+    if(isMatch){
+      a.matched = true; b.matched = true;
+      state.matchSelected = [];
+      var allDone = cards.every(function(c){return c.matched;});
+      if(allDone){
+        state.matchItems.forEach(function(it){
+          recordAnswer(it.id, !state.matchMistakes[it.id]);
+        });
+        state.matchDone = true;
+      }
+      render();
+    } else {
+      state.matchMistakes[a.itemId] = (state.matchMistakes[a.itemId]||0)+1;
+      state.matchMistakes[b.itemId] = (state.matchMistakes[b.itemId]||0)+1;
+      state.matchWrong = [aId,bId];
+      render();
+      setTimeout(function(){
+        state.matchWrong = [];
+        state.matchSelected = [];
+        render();
+      }, 650);
+    }
+  }
+
+  /* ---------- LEARN VIEW ---------- */
+  function learnView(){
+    var wrap = el('div','');
+    var items = state.learnItems;
+    var idx = state.learnIdx;
+    var label = state.scopeLabel || (TOPIC_MAP[state.topicId] && TOPIC_MAP[state.topicId].name) || 'this deck';
+
+    var header = el('div','view-header');
+    var back = el('button','back-btn','← Back');
+    back.onclick = function(){ go('home'); };
+    header.appendChild(back);
+    var track = el('div','progress-track');
+    var fill = el('div','progress-fill'); fill.style.width = (100*idx/items.length)+'%';
+    track.appendChild(fill);
+    header.appendChild(track);
+    header.appendChild(el('div','progress-text mono', (idx+1)+' / '+items.length));
+    wrap.appendChild(header);
+
+    if(idx >= items.length){
+      var done = el('div','session-card');
+      done.innerHTML = '<div class="results-top"><div class="score-big">✓</div><div class="score-sub">You finished "'+escapeHtml(label)+'"</div></div>';
+      var back2 = el('button','btn btn-primary btn-block btn-lg','Back to Home');
+      back2.onclick = function(){ go('home'); };
+      done.appendChild(back2);
+      wrap.appendChild(done);
+      return wrap;
+    }
+
+    var item = items[idx];
+    var outer = el('div','flip-outer');
+    var card = el('div','flip-card');
+    var inner = el('div','flip-inner');
+
+    var front = el('div','flip-face front');
+    front.innerHTML = (item.icon?('<div class="card-icon">'+item.icon+'</div>'):'') + '<div class="card-prompt">'+item.prompt+'</div><div class="card-hint">Tap to reveal the answer</div>';
+
+    var back_ = el('div','flip-face back');
+    var ans = item.answer[0];
+    back_.innerHTML = '<div class="card-answer">'+escapeHtml(ans)+'</div>' + (item.note?('<div class="card-note">'+escapeHtml(item.note)+'</div>'):'');
+
+    inner.appendChild(front);
+    inner.appendChild(back_);
+    card.appendChild(inner);
+    card.onclick = function(){ card.classList.toggle('flipped'); };
+    outer.appendChild(card);
+    wrap.appendChild(outer);
+
+    var actions = el('div','learn-actions');
+    var shaky = el('button','btn btn-ghost','Still Shaky');
+    shaky.onclick = function(){ seedLearn(item.id, false); go('learn', {topicId:state.topicId, learnItems:items, learnIdx:idx+1, scopeLabel:label}); };
+    var gotIt = el('button','btn btn-pine','Got It');
+    gotIt.onclick = function(){ seedLearn(item.id, true); go('learn', {topicId:state.topicId, learnItems:items, learnIdx:idx+1, scopeLabel:label}); };
+    actions.appendChild(shaky);
+    actions.appendChild(gotIt);
+    wrap.appendChild(actions);
+    wrap.appendChild(el('div','tap-hint','Flip the card before you rate yourself'));
+
+    return wrap;
+  }
+
+  /* ---------- SESSION (quiz/test/guided/drills) ---------- */
+  function startSession(mode, items, label, forceMode){
+    if(!items.length){ return; }
+    go('session', {sessionMode:mode, sessionLabel:label, sessionItems:items, sessionIdx:0, sessionAnswered:false, sessionResults:[], q:prepQuestion(items[0], forceMode), lastChoice:null, lastTypedVal:'', forceMode:forceMode, hintShown:false});
+  }
+
+  function sessionView(){
+    var wrap = el('div','');
+    var items = state.sessionItems;
+    var idx = state.sessionIdx;
+
+    var header = el('div','view-header');
+    var back = el('button','back-btn','← Exit');
+    back.onclick = function(){ go('home'); };
+    header.appendChild(back);
+    var track = el('div','progress-track');
+    var fill = el('div','progress-fill'); fill.style.width = (100*idx/items.length)+'%';
+    track.appendChild(fill);
+    header.appendChild(track);
+    header.appendChild(el('div','progress-text mono', (idx+1)+' / '+items.length));
+    wrap.appendChild(header);
+
+    if(idx >= items.length){
+      go('results', {});
+      return wrap;
+    }
+
+    var item = items[idx];
+    var topic = TOPIC_MAP[item.topic];
+    var card = el('div','session-card');
+    card.appendChild(el('div','qchip cat-'+topic.cat, topic.name));
+    card.appendChild(el('div','q-prompt', item.prompt));
+
+    if(!state.q) state.q = prepQuestion(item, state.forceMode);
+    var mode = state.q.mode;
+    var answered = state.sessionAnswered;
+
+    if(state.sessionMode === 'guided' && !answered){
+      var hintRow = el('div','hint-row');
+      if(!state.hintShown){
+        var hintBtn = el('button','btn btn-ghost btn-sm','💡 Show a hint');
+        hintBtn.onclick = function(){ state.hintShown = true; render(); };
+        hintRow.appendChild(hintBtn);
+      } else {
+        var hintText = item.note || ('Starts with "'+item.answer[0].charAt(0).toUpperCase()+'..."');
+        hintRow.appendChild(el('div','hint-text','💡 '+escapeHtml(hintText)));
+      }
+      card.appendChild(hintRow);
+    }
+
+    if(mode === 'mc'){
+      var choicesWrap = el('div','choices');
+      var opts = state.q.opts;
+      opts.forEach(function(opt){
+        var b = el('button','choice-btn', escapeHtml(opt));
+        b.disabled = !!answered;
+        if(answered){
+          if(normalize(opt) === normalize(item.answer[0])) b.classList.add('correct');
+          else if(opt === state.lastChoice) b.classList.add('incorrect');
+        }
+        b.onclick = function(){
+          if(state.sessionAnswered) return;
+          state.lastChoice = opt;
+          submitAnswer(item, opt, normalize(opt) === normalize(item.answer[0]));
+          render();
+        };
+        choicesWrap.appendChild(b);
+      });
+      card.appendChild(choicesWrap);
+    } else {
+      var row = el('div','text-row');
+      var input = el('input','text-input');
+      input.type = 'text';
+      input.placeholder = 'Type your answer...';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      if(answered){ input.disabled = true; input.value = state.lastTypedVal || ''; }
+      var submitBtn = el('button','btn btn-primary','Check');
+      submitBtn.disabled = !!answered;
+      function doSubmit(){
+        if(state.sessionAnswered) return;
+        var val = input.value;
+        var correct = item.answer.some(function(a){ return normalize(a) === normalize(val); });
+        state.lastTypedVal = val;
+        submitAnswer(item, val, correct);
+        render();
+      }
+      input.addEventListener('keydown', function(ev){ if(ev.key === 'Enter') doSubmit(); });
+      submitBtn.onclick = doSubmit;
+      row.appendChild(input);
+      row.appendChild(submitBtn);
+      card.appendChild(row);
+      setTimeout(function(){ input.focus(); }, 0);
+    }
+
+    if(answered){
+      var last = state.sessionResults[state.sessionResults.length-1];
+      var fb = el('div','feedback '+(last.correct?'correct':'incorrect'));
+      var mark = el('span','fmark', last.correct?'✓':'✕');
+      var body = el('div','');
+      if(last.correct){
+        body.innerHTML = '<b>Correct!</b>' + (item.note?(' — '+escapeHtml(item.note)):'');
+      } else {
+        var youWrote = (mode === 'typed' && last.userVal) ? ('Your answer: <b>'+escapeHtml(last.userVal)+'</b><br>') : '';
+        body.innerHTML = youWrote + 'Correct answer: <b>'+escapeHtml(item.answer[0])+'</b>' + (item.note?('<br>'+escapeHtml(item.note)):'');
+      }
+      fb.appendChild(mark);
+      fb.appendChild(body);
+      card.appendChild(fb);
+
+      var footer = el('div','session-footer');
+      var nextBtn = el('button','btn btn-primary','Next →');
+      nextBtn.onclick = function(){
+        var nextIdx = idx+1;
+        var nextQ = nextIdx < items.length ? prepQuestion(items[nextIdx], state.forceMode) : null;
+        go('session', {sessionMode:state.sessionMode, sessionLabel:state.sessionLabel, sessionItems:items, sessionIdx:nextIdx, sessionAnswered:false, sessionResults:state.sessionResults, q:nextQ, lastChoice:null, lastTypedVal:'', hintShown:false});
+      };
+      footer.appendChild(nextBtn);
+      card.appendChild(footer);
+    }
+
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  function submitAnswer(item, userVal, correct){
+    recordAnswer(item.id, correct);
+    state.sessionAnswered = true;
+    state.sessionResults.push({item:item, userVal:userVal, correct:correct});
+  }
+
+  /* ---------- RESULTS ---------- */
+  function resultsView(){
+    var wrap = el('div','');
+    var results = state.sessionResults;
+    var total = results.length;
+    var correctCount = results.filter(function(r){return r.correct;}).length;
+    var pct = total ? Math.round(100*correctCount/total) : 0;
+
+    var top = el('div','results-top');
+    top.innerHTML = '<div class="score-big mono">'+pct+'%</div><div class="score-sub">'+correctCount+' of '+total+' correct — '+escapeHtml(state.sessionLabel||'')+'</div>';
+    wrap.appendChild(top);
+
+    var byTopic = {};
+    results.forEach(function(r){
+      var tid = r.item.topic;
+      if(!byTopic[tid]) byTopic[tid] = {correct:0,total:0};
+      byTopic[tid].total++;
+      if(r.correct) byTopic[tid].correct++;
+    });
+    var label = el('div','section-label','By Topic');
+    wrap.appendChild(label);
+    var bd = el('div','breakdown-list');
+    Object.keys(byTopic).forEach(function(tid){
+      var t = TOPIC_MAP[tid];
+      var s = byTopic[tid];
+      var p = Math.round(100*s.correct/s.total);
+      var row = el('div','breakdown-row');
+      row.appendChild(el('div','breakdown-name', t.name));
+      var track = el('div','breakdown-track');
+      var fill = el('div','breakdown-fill'); fill.style.width = p+'%';
+      fill.style.background = t.cat==='grammar' ? 'var(--accent-navy)' : (t.cat==='verbs' ? 'var(--accent-pine)' : 'var(--accent-gold)');
+      track.appendChild(fill);
+      row.appendChild(track);
+      row.appendChild(el('div','breakdown-num mono', s.correct+'/'+s.total));
+      bd.appendChild(row);
+    });
+    wrap.appendChild(bd);
+
+    var missed = results.filter(function(r){return !r.correct;});
+    if(missed.length){
+      wrap.appendChild(el('div','section-label','To Review'));
+      var ml = el('div','missed-list');
+      missed.forEach(function(r){
+        var mi = el('div','missed-item');
+        mi.innerHTML = '<div class="mp">'+r.item.prompt+'</div><div class="ma">'+escapeHtml(r.item.answer[0])+'</div>';
+        ml.appendChild(mi);
+      });
+      wrap.appendChild(ml);
+    }
+
+    var actions = el('div','results-actions');
+    if(missed.length){
+      var reviewBtn = el('button','btn btn-primary','Review Mistakes ('+missed.length+')');
+      reviewBtn.onclick = function(){ startSession('review', missed.map(function(r){return r.item;}), 'Reviewing Mistakes'); };
+      actions.appendChild(reviewBtn);
+    }
+    var backBtn = el('button','btn btn-ghost','Back to Home');
+    backBtn.onclick = function(){ go('home'); };
+    actions.appendChild(backBtn);
+    wrap.appendChild(actions);
+
+    return wrap;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
+

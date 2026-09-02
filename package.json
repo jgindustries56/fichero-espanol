@@ -1,0 +1,12 @@
+{
+  "name": "fichero-de-espanol",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A spaced-repetition Spanish study app for Senderos 2.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
