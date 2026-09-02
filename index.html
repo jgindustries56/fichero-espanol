@@ -322,12 +322,23 @@
   .match-tile.selected{border-color:var(--accent-navy); background:color-mix(in srgb, var(--accent-navy) 14%, var(--surface));}
   .match-tile.matched{opacity:.35; border-color:var(--accent-pine);}
   .match-tile.wrong{border-color:var(--accent-red); background:color-mix(in srgb, var(--accent-red) 16%, var(--surface));}
+
+  /* ---------- auth ---------- */
+  .auth-area{display:flex; align-items:center;}
+  .gsi-btn-holder{min-width:100px; min-height:32px;}
+  .auth-chip{display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .auth-chip .avatar{width:20px; height:20px; border-radius:50%; display:block;}
+  .sync-note{
+    font-size:.8rem; color:var(--ink-soft); background:var(--surface); border:1px solid var(--rule);
+    border-radius:9px; padding:10px 14px; margin-bottom:18px; line-height:1.4;
+  }
 </style>
 </head>
 <body style="margin:0;">
 
 <div class="app-shell" id="app"></div>
 
+<script>window.__GOOGLE_CLIENT_ID__ = "%%GOOGLE_CLIENT_ID%%";</script>
 <script>
 (function(){
   "use strict";
@@ -1057,6 +1068,84 @@
 
   function saveProgress(){
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
+    if(AUTH.user) pushProgress();
+  }
+
+  /* ============================= GOOGLE SIGN-IN / CLOUD SYNC =============================
+     Entirely optional and self-disabling: on a page that isn't served by our
+     own backend (e.g. this same file published as a Claude Artifact), the
+     client id placeholder is never replaced and every /api/* call below just
+     fails silently — the app then behaves exactly as the local-only version
+     it always was. Nothing here is required for the app to work. */
+  var GOOGLE_CLIENT_ID = (function(){
+    var v = (typeof window !== 'undefined') ? window.__GOOGLE_CLIENT_ID__ : null;
+    return (v && v.indexOf('.apps.googleusercontent.com') !== -1) ? v : null;
+  })();
+  var AUTH = { user:null };
+
+  function apiFetch(url, opts){
+    opts = opts || {};
+    var headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+    return fetch(url, Object.assign({credentials:'same-origin'}, opts, {headers:headers}))
+      .then(function(r){
+        return r.json().catch(function(){ return {}; }).then(function(data){
+          return {ok:r.ok, status:r.status, data:data};
+        });
+      });
+  }
+
+  function pushProgress(){
+    if(!AUTH.user) return;
+    apiFetch('/api/progress', {method:'PUT', body: JSON.stringify(PROGRESS)}).catch(function(){});
+  }
+
+  function pullProgress(){
+    return apiFetch('/api/progress').then(function(res){
+      if(res.ok && res.data.progress){
+        PROGRESS = res.data.progress;
+      }
+      // Caches locally either way; if the account had no saved progress yet,
+      // this also uploads whatever was practiced on this device so it isn't lost.
+      saveProgress();
+      render();
+    }).catch(function(){});
+  }
+
+  function handleGoogleCredential(response){
+    apiFetch('/api/auth/google', {method:'POST', body: JSON.stringify({credential: response.credential})})
+      .then(function(res){
+        if(res.ok && res.data.user){
+          AUTH.user = res.data.user;
+          return pullProgress();
+        }
+        render();
+      }).catch(function(){});
+  }
+
+  function signOut(){
+    apiFetch('/api/auth/logout', {method:'POST'}).catch(function(){});
+    AUTH.user = null;
+    render();
+  }
+
+  function initAuth(){
+    if(!GOOGLE_CLIENT_ID) return;
+    apiFetch('/api/me').then(function(res){
+      if(res.ok && res.data.user){
+        AUTH.user = res.data.user;
+        pullProgress();
+      }
+    }).catch(function(){});
+    var s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true; s.defer = true;
+    s.onload = function(){
+      try{
+        google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID, callback:handleGoogleCredential});
+      }catch(e){}
+      render();
+    };
+    document.head.appendChild(s);
   }
 
   function getProg(id){ return PROGRESS.items[id]; }
@@ -1261,8 +1350,36 @@
     infoBtn.onclick = function(){ state.infoOpen = !state.infoOpen; render(); };
     stats.appendChild(infoBtn);
 
+    stats.appendChild(authArea());
+
     bar.appendChild(stats);
     return bar;
+  }
+
+  function authArea(){
+    var wrap = el('div','auth-area');
+    if(!GOOGLE_CLIENT_ID) return wrap;
+    if(AUTH.user){
+      var chip = el('button','chip auth-chip');
+      var firstName = (AUTH.user.name||AUTH.user.email||'').split(' ')[0];
+      chip.innerHTML = (AUTH.user.picture ? '<img class="avatar" src="'+escapeHtml(AUTH.user.picture)+'" alt="">' : '') + '<span>'+escapeHtml(firstName)+'</span>';
+      chip.title = 'Signed in as '+AUTH.user.email+' — click to sign out';
+      chip.onclick = function(){
+        if(confirm('Sign out of '+AUTH.user.email+'? Your progress stays saved to that account.')) signOut();
+      };
+      wrap.appendChild(chip);
+    } else {
+      var holder = el('div','gsi-btn-holder');
+      wrap.appendChild(holder);
+      setTimeout(function(){
+        try{
+          if(window.google && google.accounts && google.accounts.id){
+            google.accounts.id.renderButton(holder, {theme:'outline', size:'medium', shape:'pill', text:'signin'});
+          }
+        }catch(e){}
+      }, 0);
+    }
+    return wrap;
   }
 
   function navBar(){
@@ -1317,6 +1434,14 @@
     statGrid.appendChild(statTile(masteredCount()+' / '+ALL_ITEMS.length, 'Cards Mastered'));
     statGrid.appendChild(statTile(String(PROGRESS.streak.count||0), (PROGRESS.streak.count===1?'Day Streak':'Day Streak')));
     wrap.appendChild(statGrid);
+
+    if(GOOGLE_CLIENT_ID){
+      var syncNote = el('div','sync-note');
+      syncNote.textContent = AUTH.user
+        ? ('✓ Saved to your Google account (' + AUTH.user.email + ') — pick up where you left off on any device.')
+        : 'Signed out — progress is only saved on this device. Sign in with Google (top right) to save it to your account.';
+      wrap.appendChild(syncNote);
+    }
 
     var catBars = el('div','cat-bars');
     catBars.appendChild(categoryBar('grammar','Grammar'));
@@ -1897,6 +2022,7 @@
   }
 
   render();
+  initAuth();
 })();
 </script>
 </body>
