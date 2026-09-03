@@ -2070,10 +2070,17 @@
 
     if(!state.historyLogged && total){
       if(!PROGRESS.history) PROGRESS.history = [];
-      PROGRESS.history.push({date:todayStr(), ts:Date.now(), mode:state.sessionMode, label:state.sessionLabel||'', correct:correctCount, total:total, pct:pct});
+      var entry = {date:todayStr(), ts:Date.now(), mode:state.sessionMode, label:state.sessionLabel||'', correct:correctCount, total:total, pct:pct};
+      PROGRESS.history.push(entry);
       if(PROGRESS.history.length > 50) PROGRESS.history = PROGRESS.history.slice(-50);
       state.historyLogged = true;
       saveProgress();
+      // Best-effort mirror to the Google Sheet the account owner can browse.
+      // Only meaningful when signed in (mirrors are attributed to an
+      // account); silently does nothing otherwise, same as the rest of sync.
+      if(AUTH.user){
+        apiFetch('/api/session-complete', {method:'POST', body: JSON.stringify(entry)}).catch(function(){});
+      }
     }
 
     var top = el('div','results-top');

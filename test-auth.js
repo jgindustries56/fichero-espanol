@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const assert = require('assert');
-const { verifyGoogleIdTokenWithKeys } = require('./server.js');
+const { verifyGoogleIdTokenWithKeys, buildServiceAccountJWT } = require('./server.js');
 
 function b64url(buf) {
   return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -97,6 +97,45 @@ check('token signed by a different key pair entirely is rejected', () => {
   const sig = crypto.sign('RSA-SHA256', Buffer.from(headerB64+'.'+payloadB64), other.privateKey);
   const forged = headerB64 + '.' + payloadB64 + '.' + b64url(sig);
   assert.throws(() => verifyGoogleIdTokenWithKeys(forged, keys, CLIENT_ID), /Bad signature/);
+});
+
+// --- Sheets service-account JWT signing (the outbound side — Google's
+// oauth2 endpoint verifies these; we can't reach that from here, but we can
+// prove the JWT this function builds is exactly the assertion a correct
+// implementation of the RFC 7523 JWT-bearer flow would produce: a valid
+// RS256 signature over the header+claims, with the right shape. ---
+const svc = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+const svcPrivatePem = svc.privateKey.export({ type: 'pkcs1', format: 'pem' });
+const svcPublicPem = svc.publicKey.export({ type: 'pkcs1', format: 'pem' });
+
+check('service-account JWT has correct header, claims, and a verifiable signature', () => {
+  const now = Math.floor(Date.now() / 1000);
+  const jwt = buildServiceAccountJWT('bot@project.iam.gserviceaccount.com', svcPrivatePem, 'https://www.googleapis.com/auth/spreadsheets', now);
+  const parts = jwt.split('.');
+  assert.strictEqual(parts.length, 3, 'expected a three-part JWT');
+  const header = JSON.parse(Buffer.from(parts[0].replace(/-/g,'+').replace(/_/g,'/'), 'base64').toString('utf8'));
+  const claims = JSON.parse(Buffer.from(parts[1].replace(/-/g,'+').replace(/_/g,'/'), 'base64').toString('utf8'));
+  assert.strictEqual(header.alg, 'RS256');
+  assert.strictEqual(claims.iss, 'bot@project.iam.gserviceaccount.com');
+  assert.strictEqual(claims.scope, 'https://www.googleapis.com/auth/spreadsheets');
+  assert.strictEqual(claims.aud, 'https://oauth2.googleapis.com/token');
+  assert.strictEqual(claims.exp, now + 3600);
+  assert.strictEqual(claims.iat, now);
+
+  const signingInput = Buffer.from(parts[0] + '.' + parts[1]);
+  const signature = Buffer.from(parts[2].replace(/-/g,'+').replace(/_/g,'/'), 'base64');
+  const ok = crypto.verify('RSA-SHA256', signingInput, svcPublicPem, signature);
+  assert.ok(ok, 'signature should verify against the matching public key');
+});
+
+check('service-account JWT signed with the wrong key fails verification (sanity check on the check itself)', () => {
+  const wrongKey = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const jwt = buildServiceAccountJWT('bot@project.iam.gserviceaccount.com', wrongKey.privateKey, 'scope', Math.floor(Date.now()/1000));
+  const parts = jwt.split('.');
+  const signingInput = Buffer.from(parts[0] + '.' + parts[1]);
+  const signature = Buffer.from(parts[2].replace(/-/g,'+').replace(/_/g,'/'), 'base64');
+  const ok = crypto.verify('RSA-SHA256', signingInput, svcPublicPem, signature);
+  assert.strictEqual(ok, false, 'a JWT signed by a different key must not verify against this public key');
 });
 
 console.log(failures === 0 ? 'ALL AUTH UNIT TESTS PASSED' : (failures + ' FAILURES'));

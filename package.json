@@ -4,7 +4,12 @@
   "private": true,
   "description": "A spaced-repetition Spanish study app for Senderos 2.",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node test-auth.js && node test-routes.js && node test-app.js && node test-accuracy.js",
+    "test:auth": "node test-auth.js",
+    "test:routes": "node test-routes.js",
+    "test:app": "node test-app.js",
+    "test:accuracy": "node test-accuracy.js"
   },
   "engines": {
     "node": ">=18"

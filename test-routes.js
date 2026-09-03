@@ -141,6 +141,26 @@ async function run() {
     assert.strictEqual(onDisk.streak.count, 4);
   });
 
+  await check('POST /api/session-complete requires auth', async () => {
+    const r = await req('POST', '/api/session-complete', { body: { correct: 4, total: 5, pct: 80, label: 'Quiz', mode: 'quiz' } });
+    assert.strictEqual(r.status, 401);
+  });
+
+  await check('POST /api/session-complete rejects a malformed payload', async () => {
+    const cookie = 'fichero_session=' + serverExports.__testCreateSession({ sub: 'sub-dave', email: 'dave@example.com', name: 'Dave', picture: '' });
+    const r = await req('POST', '/api/session-complete', { body: { label: 'Quiz' }, cookie });
+    assert.strictEqual(r.status, 400);
+  });
+
+  await check('POST /api/session-complete succeeds and reports mirrored:false when Sheets is not configured', async () => {
+    if (serverExports.SHEETS_CONFIGURED) return; // this test env intentionally has no Sheets vars set
+    const cookie = 'fichero_session=' + serverExports.__testCreateSession({ sub: 'sub-erin', email: 'erin@example.com', name: 'Erin', picture: '' });
+    const r = await req('POST', '/api/session-complete', { body: { correct: 4, total: 5, pct: 80, label: 'Quiz — Ir', mode: 'quiz' }, cookie });
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.body.ok, true);
+    assert.strictEqual(r.body.mirrored, false);
+  });
+
   console.log(failures === 0 ? 'ALL ROUTE TESTS PASSED' : (failures + ' FAILURES'));
   server.close();
   process.exit(failures === 0 ? 0 : 1);

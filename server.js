@@ -6,6 +6,14 @@ const https = require('https');
 
 const PORT = process.env.PORT || 3000;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+// Optional: mirrors each completed session to a Google Sheet, purely as a
+// human-readable window into activity. Railway's volume-backed JSON store
+// (above) stays the real, load-bearing data — this is best-effort and never
+// blocks or fails a user's save if it's unset or Google is unreachable.
+const SHEETS_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
+const SHEETS_KEY = (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+const SHEETS_ID = process.env.GOOGLE_SHEET_ID || '';
+const SHEETS_CONFIGURED = !!(SHEETS_EMAIL && SHEETS_KEY && SHEETS_ID);
 // DATA_DIR should point at a mounted Railway volume in production so saved
 // progress survives redeploys; falls back to a local folder for dev.
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -105,6 +113,83 @@ async function verifyGoogleIdToken(idToken) {
   return verifyGoogleIdTokenWithKeys(idToken, keys, GOOGLE_CLIENT_ID);
 }
 
+/* ============================= Google Sheets mirror =============================
+   A service-account JWT-bearer flow, hand-rolled the same way ID-token
+   verification is above (no googleapis dependency): sign a short-lived JWT
+   with the service account's private key, trade it for an access token,
+   then call the Sheets API directly. */
+function b64url(buf) {
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+// Pure — builds and signs the assertion JWT. Independent of the network call
+// so it can be unit-tested against a locally generated key pair.
+function buildServiceAccountJWT(email, privateKeyPem, scope, now) {
+  now = now || Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const claims = { iss: email, scope: scope, aud: 'https://oauth2.googleapis.com/token', exp: now + 3600, iat: now };
+  const signingInput = b64url(Buffer.from(JSON.stringify(header))) + '.' + b64url(Buffer.from(JSON.stringify(claims)));
+  const signature = crypto.sign('RSA-SHA256', Buffer.from(signingInput), privateKeyPem);
+  return signingInput + '.' + b64url(signature);
+}
+function postForm(url, formBody) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, res => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(formBody);
+    req.end();
+  });
+}
+let sheetsTokenCache = { token: null, expiresAt: 0 };
+async function getSheetsAccessToken() {
+  if (sheetsTokenCache.token && Date.now() < sheetsTokenCache.expiresAt - 60000) return sheetsTokenCache.token;
+  const jwt = buildServiceAccountJWT(SHEETS_EMAIL, SHEETS_KEY, 'https://www.googleapis.com/auth/spreadsheets');
+  const body = 'grant_type=' + encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer') + '&assertion=' + encodeURIComponent(jwt);
+  const res = await postForm('https://oauth2.googleapis.com/token', body);
+  if (res.status !== 200 || !res.body.access_token) throw new Error('token exchange failed: ' + JSON.stringify(res.body));
+  sheetsTokenCache = { token: res.body.access_token, expiresAt: Date.now() + (res.body.expires_in || 3600) * 1000 };
+  return sheetsTokenCache.token;
+}
+function sheetsAppend(accessToken, values) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ values: [values] });
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEETS_ID}/values/Sheet1!A:H:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+    const req = https.request(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken, 'Content-Length': Buffer.byteLength(body) }
+    }, res => {
+      let data = '';
+      res.on('data', c => { data += c; });
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve(data);
+        else reject(new Error('Sheets append failed (' + res.statusCode + '): ' + data));
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+// Best-effort by design: a Sheets outage or misconfiguration must never take
+// down the (already-succeeded) local/volume save that triggered this.
+async function mirrorSessionToSheet(user, entry) {
+  if (!SHEETS_CONFIGURED) return;
+  try {
+    const token = await getSheetsAccessToken();
+    await sheetsAppend(token, [
+      new Date().toISOString(), user.name || '', user.email || '',
+      entry.label || '', entry.mode || '', entry.correct, entry.total, entry.pct
+    ]);
+  } catch (e) {
+    console.error('Sheets mirror failed (non-fatal):', e.message);
+  }
+}
+
 function progressPath(sub) {
   const safe = String(sub).replace(/[^a-zA-Z0-9_-]/g, '');
   if (!safe) throw new Error('bad subject id');
@@ -175,6 +260,17 @@ app.put('/api/progress', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/api/session-complete', requireAuth, (req, res) => {
+  const entry = req.body || {};
+  if (typeof entry.total !== 'number' || typeof entry.correct !== 'number' || typeof entry.pct !== 'number') {
+    return res.status(400).json({ error: 'bad session-complete payload' });
+  }
+  // Respond immediately — mirroring is fire-and-forget from the client's
+  // point of view, same as the rest of the sync layer.
+  res.json({ ok: true, mirrored: SHEETS_CONFIGURED });
+  mirrorSessionToSheet(req.user, entry);
+});
+
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log('Fichero de Español running on port ' + PORT);
@@ -182,7 +278,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  app, verifyGoogleIdTokenWithKeys, progressPath,
+  app, verifyGoogleIdTokenWithKeys, progressPath, buildServiceAccountJWT, SHEETS_CONFIGURED,
   // Test-only seam: inserts a session directly so authenticated routes can
   // be exercised without a live Google token. Never reachable over HTTP.
   __testCreateSession(user) {
