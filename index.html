@@ -332,6 +332,21 @@
     font-size:.8rem; color:var(--ink-soft); background:var(--surface); border:1px solid var(--rule);
     border-radius:9px; padding:10px 14px; margin-bottom:18px; line-height:1.4;
   }
+
+  /* ---------- history / recent activity ---------- */
+  .history-list{display:flex; flex-direction:column; gap:8px; margin-bottom:20px;}
+  .history-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface); border:1px solid var(--rule); border-radius:9px; padding:11px 14px;
+  }
+  .history-left{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .history-label{font-size:.86rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .history-date{font-size:.72rem; color:var(--ink-soft);}
+  .history-score{display:flex; align-items:center; gap:8px; font-size:.82rem; flex-shrink:0;}
+  .history-pct{font-weight:700; min-width:3.2em; text-align:right;}
+  .history-score.good .history-pct{color:var(--accent-pine-ink);}
+  .history-score.ok .history-pct{color:var(--accent-gold-ink);}
+  .history-score.low .history-pct{color:var(--accent-red-ink);}
 </style>
 </head>
 <body style="margin:0;">
@@ -831,7 +846,8 @@
     {id:'quiz', label:'Quiz'},
     {id:'test', label:'Test'},
     {id:'guided', label:'Guided Exercises'},
-    {id:'methods', label:'Study Methods'}
+    {id:'methods', label:'Study Methods'},
+    {id:'history', label:'History'}
   ];
 
   /* ============================= ITEM BUILDERS ============================= */
@@ -1065,6 +1081,7 @@
     return {items:{}, streak:{count:0,last:null}};
   }
   var PROGRESS = loadProgress();
+  if(!PROGRESS.history) PROGRESS.history = []; // upgrade path for progress saved before session history existed
 
   function saveProgress(){
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
@@ -1103,6 +1120,7 @@
     return apiFetch('/api/progress').then(function(res){
       if(res.ok && res.data.progress){
         PROGRESS = res.data.progress;
+        if(!PROGRESS.history) PROGRESS.history = [];
       }
       // Caches locally either way; if the account had no saved progress yet,
       // this also uploads whatever was practiced on this device so it isn't lost.
@@ -1294,7 +1312,7 @@
     window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
   }
 
-  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1};
+  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1, history:1};
 
   function render(){
     app.innerHTML = '';
@@ -1313,6 +1331,7 @@
     else if(state.view === 'session') app.appendChild(sessionView());
     else if(state.view === 'results') app.appendChild(resultsView());
     else if(state.view === 'matching') app.appendChild(matchingView());
+    else if(state.view === 'history') app.appendChild(historyView());
   }
 
   function ringSvg(pct, size){
@@ -1425,6 +1444,60 @@
     return row;
   }
 
+  function scoreClass(pct){ return pct>=80?'good':(pct>=50?'ok':'low'); }
+
+  function historyRow(entry){
+    var row = el('div','history-row');
+    var left = el('div','history-left');
+    left.appendChild(el('div','history-label', escapeHtml(entry.label||'Session')));
+    left.appendChild(el('div','history-date mono', entry.date));
+    row.appendChild(left);
+    var score = el('div','history-score '+scoreClass(entry.pct));
+    score.innerHTML = '<span class="mono">'+entry.correct+'/'+entry.total+'</span><span class="history-pct mono">'+entry.pct+'%</span>';
+    row.appendChild(score);
+    return row;
+  }
+
+  function recentActivitySection(limit){
+    var wrap = el('div','');
+    wrap.appendChild(el('div','section-label','Recent Activity'));
+    var history = (PROGRESS.history||[]).slice().reverse();
+    if(!history.length){
+      var empty = el('div','sync-note','No sessions yet — take a Quiz or Test to see your scores show up here.');
+      wrap.appendChild(empty);
+      return wrap;
+    }
+    var list = el('div','history-list');
+    history.slice(0, limit).forEach(function(entry){ list.appendChild(historyRow(entry)); });
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  function historyView(){
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title','History'));
+    wrap.appendChild(el('p','page-desc','Every completed Quiz, Test, Guided session, and drill — most recent first. This is exactly what "Recent Activity" on Home shows, in full.'));
+
+    var history = (PROGRESS.history||[]).slice().reverse();
+    if(history.length){
+      var totalSessions = history.length;
+      var avgPct = Math.round(history.reduce(function(s,h){return s+h.pct;},0) / totalSessions);
+      var statGrid = el('div','stat-grid');
+      statGrid.appendChild(statTile(String(totalSessions), totalSessions===1?'Session Completed':'Sessions Completed'));
+      statGrid.appendChild(statTile(avgPct+'%', 'Average Score'));
+      wrap.appendChild(statGrid);
+    }
+
+    var list = el('div','history-list');
+    if(!history.length){
+      wrap.appendChild(el('div','sync-note','No sessions yet — take a Quiz or Test to see your scores show up here.'));
+    } else {
+      history.forEach(function(entry){ list.appendChild(historyRow(entry)); });
+      wrap.appendChild(list);
+    }
+    return wrap;
+  }
+
   function homeView(){
     var wrap = el('div','');
 
@@ -1449,6 +1522,8 @@
     catBars.appendChild(categoryBar('vocab','Vocabulary'));
     wrap.appendChild(catBars);
 
+    wrap.appendChild(recentActivitySection(5));
+
     wrap.appendChild(el('div','section-label','Jump In'));
     var jumpGrid = el('div','jump-grid');
     var jumpItems = [
@@ -1456,7 +1531,8 @@
       {title:'Quiz', desc:'A short, mixed check with instant feedback.', view:'quiz'},
       {title:'Test', desc:'A longer, harder check — closer to the real exam.', view:'test'},
       {title:'Guided Exercises', desc:'See the rule explained, then practice it.', view:'guided'},
-      {title:'Study Methods', desc:'Fill-in-the-blank, multiple choice, matching, and more.', view:'methods'}
+      {title:'Study Methods', desc:'Fill-in-the-blank, multiple choice, matching, and more.', view:'methods'},
+      {title:'History', desc:'Every past session and score, in full.', view:'history'}
     ];
     jumpItems.forEach(function(j){
       var card = el('div','global-card');
@@ -1498,7 +1574,7 @@
     var resetBtn = el('button','','Reset Progress');
     resetBtn.onclick = function(){
       if(confirm('Delete all progress saved in this browser?')){
-        PROGRESS = {items:{}, streak:{count:0,last:null}};
+        PROGRESS = {items:{}, streak:{count:0,last:null}, history:[]};
         saveProgress();
         render();
       }
@@ -1829,7 +1905,7 @@
   /* ---------- SESSION (quiz/test/guided/drills) ---------- */
   function startSession(mode, items, label, forceMode){
     if(!items.length){ return; }
-    go('session', {sessionMode:mode, sessionLabel:label, sessionItems:items, sessionIdx:0, sessionAnswered:false, sessionResults:[], q:prepQuestion(items[0], forceMode), lastChoice:null, lastTypedVal:'', forceMode:forceMode, hintShown:false});
+    go('session', {sessionMode:mode, sessionLabel:label, sessionItems:items, sessionIdx:0, sessionAnswered:false, sessionResults:[], q:prepQuestion(items[0], forceMode), lastChoice:null, lastTypedVal:'', forceMode:forceMode, hintShown:false, historyLogged:false});
   }
 
   function sessionView(){
@@ -1863,8 +1939,9 @@
     var mode = state.q.mode;
     var answered = state.sessionAnswered;
 
+    var hintRow = null;
     if(state.sessionMode === 'guided' && !answered){
-      var hintRow = el('div','hint-row');
+      hintRow = el('div','hint-row');
       if(!state.hintShown){
         var hintBtn = el('button','btn btn-ghost btn-sm','💡 Show a hint');
         hintBtn.onclick = function(){ state.hintShown = true; render(); };
@@ -1876,9 +1953,21 @@
       card.appendChild(hintRow);
     }
 
+    // Answering never calls render(): tearing down and rebuilding the whole
+    // page (topbar, nav, everything) on every click is what caused the
+    // visible jitter. Instead we mutate this same, already-on-screen card in
+    // place — disable the inputs, mark the answer, append feedback — and
+    // only go through a full render() when moving to the *next* question,
+    // where a fresh screen is expected anyway.
+    function afterAnswer(){
+      if(hintRow && hintRow.parentNode) hintRow.parentNode.removeChild(hintRow);
+      appendFeedback(card, item, mode, idx, items);
+    }
+
     if(mode === 'mc'){
       var choicesWrap = el('div','choices');
       var opts = state.q.opts;
+      var choiceButtons = [];
       opts.forEach(function(opt){
         var b = el('button','choice-btn', escapeHtml(opt));
         b.disabled = !!answered;
@@ -1889,9 +1978,17 @@
         b.onclick = function(){
           if(state.sessionAnswered) return;
           state.lastChoice = opt;
-          submitAnswer(item, opt, normalize(opt) === normalize(item.answer[0]));
-          render();
+          var correct = normalize(opt) === normalize(item.answer[0]);
+          submitAnswer(item, opt, correct);
+          choiceButtons.forEach(function(cb){
+            cb.disabled = true;
+            if(normalize(cb.__opt) === normalize(item.answer[0])) cb.classList.add('correct');
+            else if(cb.__opt === opt) cb.classList.add('incorrect');
+          });
+          afterAnswer();
         };
+        b.__opt = opt;
+        choiceButtons.push(b);
         choicesWrap.appendChild(b);
       });
       card.appendChild(choicesWrap);
@@ -1911,7 +2008,9 @@
         var correct = item.answer.some(function(a){ return normalize(a) === normalize(val); });
         state.lastTypedVal = val;
         submitAnswer(item, val, correct);
-        render();
+        input.disabled = true;
+        submitBtn.disabled = true;
+        afterAnswer();
       }
       input.addEventListener('keydown', function(ev){ if(ev.key === 'Enter') doSubmit(); });
       submitBtn.onclick = doSubmit;
@@ -1922,33 +2021,37 @@
     }
 
     if(answered){
-      var last = state.sessionResults[state.sessionResults.length-1];
-      var fb = el('div','feedback '+(last.correct?'correct':'incorrect'));
-      var mark = el('span','fmark', last.correct?'✓':'✕');
-      var body = el('div','');
-      if(last.correct){
-        body.innerHTML = '<b>Correct!</b>' + (item.note?(' — '+escapeHtml(item.note)):'');
-      } else {
-        var youWrote = (mode === 'typed' && last.userVal) ? ('Your answer: <b>'+escapeHtml(last.userVal)+'</b><br>') : '';
-        body.innerHTML = youWrote + 'Correct answer: <b>'+escapeHtml(item.answer[0])+'</b>' + (item.note?('<br>'+escapeHtml(item.note)):'');
-      }
-      fb.appendChild(mark);
-      fb.appendChild(body);
-      card.appendChild(fb);
-
-      var footer = el('div','session-footer');
-      var nextBtn = el('button','btn btn-primary','Next →');
-      nextBtn.onclick = function(){
-        var nextIdx = idx+1;
-        var nextQ = nextIdx < items.length ? prepQuestion(items[nextIdx], state.forceMode) : null;
-        go('session', {sessionMode:state.sessionMode, sessionLabel:state.sessionLabel, sessionItems:items, sessionIdx:nextIdx, sessionAnswered:false, sessionResults:state.sessionResults, q:nextQ, lastChoice:null, lastTypedVal:'', hintShown:false});
-      };
-      footer.appendChild(nextBtn);
-      card.appendChild(footer);
+      appendFeedback(card, item, mode, idx, items);
     }
 
     wrap.appendChild(card);
     return wrap;
+  }
+
+  function appendFeedback(card, item, mode, idx, items){
+    var last = state.sessionResults[state.sessionResults.length-1];
+    var fb = el('div','feedback '+(last.correct?'correct':'incorrect'));
+    var mark = el('span','fmark', last.correct?'✓':'✕');
+    var body = el('div','');
+    if(last.correct){
+      body.innerHTML = '<b>Correct!</b>' + (item.note?(' — '+escapeHtml(item.note)):'');
+    } else {
+      var youWrote = (mode === 'typed' && last.userVal) ? ('Your answer: <b>'+escapeHtml(last.userVal)+'</b><br>') : '';
+      body.innerHTML = youWrote + 'Correct answer: <b>'+escapeHtml(item.answer[0])+'</b>' + (item.note?('<br>'+escapeHtml(item.note)):'');
+    }
+    fb.appendChild(mark);
+    fb.appendChild(body);
+    card.appendChild(fb);
+
+    var footer = el('div','session-footer');
+    var nextBtn = el('button','btn btn-primary','Next →');
+    nextBtn.onclick = function(){
+      var nextIdx = idx+1;
+      var nextQ = nextIdx < items.length ? prepQuestion(items[nextIdx], state.forceMode) : null;
+      go('session', {sessionMode:state.sessionMode, sessionLabel:state.sessionLabel, sessionItems:items, sessionIdx:nextIdx, sessionAnswered:false, sessionResults:state.sessionResults, q:nextQ, lastChoice:null, lastTypedVal:'', hintShown:false});
+    };
+    footer.appendChild(nextBtn);
+    card.appendChild(footer);
   }
 
   function submitAnswer(item, userVal, correct){
@@ -1964,6 +2067,14 @@
     var total = results.length;
     var correctCount = results.filter(function(r){return r.correct;}).length;
     var pct = total ? Math.round(100*correctCount/total) : 0;
+
+    if(!state.historyLogged && total){
+      if(!PROGRESS.history) PROGRESS.history = [];
+      PROGRESS.history.push({date:todayStr(), ts:Date.now(), mode:state.sessionMode, label:state.sessionLabel||'', correct:correctCount, total:total, pct:pct});
+      if(PROGRESS.history.length > 50) PROGRESS.history = PROGRESS.history.slice(-50);
+      state.historyLogged = true;
+      saveProgress();
+    }
 
     var top = el('div','results-top');
     top.innerHTML = '<div class="score-big mono">'+pct+'%</div><div class="score-sub">'+correctCount+' of '+total+' correct — '+escapeHtml(state.sessionLabel||'')+'</div>';
