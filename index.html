@@ -347,6 +347,29 @@
   .history-score.good .history-pct{color:var(--accent-pine-ink);}
   .history-score.ok .history-pct{color:var(--accent-gold-ink);}
   .history-score.low .history-pct{color:var(--accent-red-ink);}
+
+  /* ---------- report card ---------- */
+  .grade-hero{
+    background:var(--surface); border:1px solid var(--rule); border-radius:14px; box-shadow:var(--shadow);
+    padding:20px 22px; display:flex; align-items:center; gap:18px; margin-bottom:14px;
+  }
+  .grade-letter{font-family:'Piazzolla',serif; font-weight:700; font-size:2.6rem; line-height:1; min-width:58px; text-align:center;}
+  .grade-hero.good .grade-letter{color:var(--accent-pine-ink);}
+  .grade-hero.ok .grade-letter{color:var(--accent-gold-ink);}
+  .grade-hero.low .grade-letter{color:var(--accent-red-ink);}
+  .grade-info{display:flex; flex-direction:column; gap:3px;}
+  .grade-score{font-size:1.2rem; font-weight:700;}
+  .grade-formula{font-size:.76rem; color:var(--ink-soft); line-height:1.45; max-width:48ch;}
+  .trend-note{font-size:.83rem; padding:9px 14px; border-radius:9px; background:var(--surface); border:1px solid var(--rule); margin-bottom:16px; line-height:1.4;}
+  .trend-note.up{color:var(--accent-pine-ink);}
+  .trend-note.down{color:var(--accent-red-ink);}
+  .breakdown-fill.good{background:var(--accent-pine);}
+  .breakdown-fill.ok{background:var(--accent-gold);}
+  .breakdown-fill.low{background:var(--accent-red);}
+  .breakdown-row.topic-row{cursor:pointer;}
+  .breakdown-row.topic-row:hover .breakdown-name{color:var(--ink); text-decoration:underline;}
+  .breakdown-row.unattempted .breakdown-fill{background:var(--surface-2);}
+  .breakdown-row.unattempted .breakdown-num{color:var(--ink-soft); opacity:.7;}
 </style>
 </head>
 <body style="margin:0;">
@@ -847,7 +870,8 @@
     {id:'test', label:'Test'},
     {id:'guided', label:'Guided Exercises'},
     {id:'methods', label:'Study Methods'},
-    {id:'history', label:'History'}
+    {id:'history', label:'History'},
+    {id:'grades', label:'Report Card'}
   ];
 
   /* ============================= ITEM BUILDERS ============================= */
@@ -1231,6 +1255,66 @@
     var m = items.filter(function(it){ return isMastered(it.id); }).length;
     return Math.round(100*m/items.length);
   }
+
+  /* ---------- report card: accuracy/coverage metrics (distinct from the
+     box-based mastery above — these are raw correct/seen hit rates) ---------- */
+  function accuracyOf(items){
+    // items: array of {id} objects. Only counts items actually attempted.
+    var progs = items.map(function(it){ return getProg(it.id); }).filter(Boolean);
+    var seen = progs.reduce(function(s,p){ return s+p.seen; }, 0);
+    var correct = progs.reduce(function(s,p){ return s+p.correct; }, 0);
+    return { pct: seen ? Math.round(100*correct/seen) : null, seen: seen, correct: correct };
+  }
+  function topicAccuracy(topicId){ return accuracyOf(ITEMS_BY_TOPIC[topicId] || []).pct; }
+  function categoryAccuracy(cat){
+    return accuracyOf(ALL_ITEMS.filter(function(it){ return TOPIC_MAP[it.topic].cat === cat; })).pct;
+  }
+  function typeAccuracy(types){
+    return accuracyOf(ALL_ITEMS.filter(function(it){ return types.indexOf(it.type) !== -1; }));
+  }
+  function lifetimeAccuracy(){ return accuracyOf(ALL_ITEMS).pct || 0; }
+  function attemptedCount(){ return ALL_ITEMS.filter(function(it){ return !!getProg(it.id); }).length; }
+  function coveragePct(){ return ALL_ITEMS.length ? Math.round(100*attemptedCount()/ALL_ITEMS.length) : 0; }
+  function totalQuestionsAnswered(){ return accuracyOf(ALL_ITEMS).seen; }
+
+  function modeStats(){
+    var byMode = {};
+    (PROGRESS.history||[]).forEach(function(h){
+      if(!byMode[h.mode]) byMode[h.mode] = {count:0, sum:0};
+      byMode[h.mode].count++;
+      byMode[h.mode].sum += h.pct;
+    });
+    return byMode;
+  }
+  var MODE_LABELS = {
+    quiz:'Quiz', test:'Test', guided:'Guided Exercises',
+    'typed-drill':'Fill-in-the-Blank Drill', 'mc-drill':'Multiple Choice Drill', review:'Mistake Review'
+  };
+
+  // Compares the average of the most recent sessions against the batch
+  // before them, so a learner can see whether they're actually improving —
+  // requires enough history to form two comparable batches, else null.
+  function recentTrend(){
+    var hist = PROGRESS.history || [];
+    var n = Math.min(5, Math.floor(hist.length/2));
+    if(n < 2) return null;
+    var avg = function(arr){ return arr.reduce(function(s,h){ return s+h.pct; },0) / arr.length; };
+    var recent = hist.slice(-n);
+    var prior = hist.slice(-2*n, -n);
+    var recentAvg = avg(recent), priorAvg = avg(prior);
+    return { n:n, recentAvg: Math.round(recentAvg), priorAvg: Math.round(priorAvg), delta: Math.round(recentAvg-priorAvg) };
+  }
+
+  // The one composite number: weighted toward long-term retention (mastery)
+  // over raw hit rate (accuracy), with a coverage term so untouched material
+  // pulls the grade down rather than being silently ignored.
+  function compositeGrade(){
+    var mastery = overallMastery(), accuracy = lifetimeAccuracy(), coverage = coveragePct();
+    var score = Math.round(mastery*0.4 + accuracy*0.35 + coverage*0.25);
+    var letter = score>=90?'A':score>=80?'B':score>=70?'C':score>=60?'D':'F';
+    return { score:score, letter:letter, mastery:mastery, accuracy:accuracy, coverage:coverage };
+  }
+
   function mcCapablePool(pool){
     return pool.filter(function(it){ return !!(it.choices || it.pool); });
   }
@@ -1312,7 +1396,7 @@
     window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
   }
 
-  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1, history:1};
+  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1, history:1, grades:1};
 
   function render(){
     app.innerHTML = '';
@@ -1332,6 +1416,7 @@
     else if(state.view === 'results') app.appendChild(resultsView());
     else if(state.view === 'matching') app.appendChild(matchingView());
     else if(state.view === 'history') app.appendChild(historyView());
+    else if(state.view === 'grades') app.appendChild(gradesView());
   }
 
   function ringSvg(pct, size){
@@ -1495,6 +1580,115 @@
       history.forEach(function(entry){ list.appendChild(historyRow(entry)); });
       wrap.appendChild(list);
     }
+    return wrap;
+  }
+
+  function gradeBreakdownRow(name, pct, clickFn){
+    var attempted = pct !== null;
+    var row = el('div','breakdown-row'+(clickFn?' topic-row':'')+(attempted?'':' unattempted'));
+    row.appendChild(el('div','breakdown-name', name));
+    var track = el('div','breakdown-track');
+    var fill = el('div','breakdown-fill '+(attempted?scoreClass(pct):'')); fill.style.width = (attempted?pct:0)+'%';
+    track.appendChild(fill);
+    row.appendChild(track);
+    row.appendChild(el('div','breakdown-num mono', attempted ? pct+'%' : '—'));
+    if(clickFn){ row.onclick = clickFn; }
+    return row;
+  }
+
+  function gradesView(){
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title','Report Card'));
+    wrap.appendChild(el('p','page-desc','A deeper breakdown than Home: mastery, raw accuracy, and coverage — each pulled apart by topic, study method, and recall direction — plus one overall grade combining all three.'));
+
+    if(coveragePct() === 0){
+      wrap.appendChild(el('div','sync-note','No practice recorded yet — take a Quiz, Test, or Guided Exercise and this page fills in automatically.'));
+      return wrap;
+    }
+
+    var grade = compositeGrade();
+    var hero = el('div','grade-hero '+scoreClass(grade.score));
+    var letter = el('div','grade-letter', grade.letter);
+    var info = el('div','grade-info');
+    info.appendChild(el('div','grade-score mono', grade.score+'%  Overall Grade'));
+    info.appendChild(el('div','grade-formula','40% Mastery ('+grade.mastery+'%) + 35% Lifetime Accuracy ('+grade.accuracy+'%) + 25% Curriculum Coverage ('+grade.coverage+'%), across all '+ALL_ITEMS.length+' cards in the app.'));
+    hero.appendChild(letter);
+    hero.appendChild(info);
+    wrap.appendChild(hero);
+
+    var statGrid = el('div','stat-grid');
+    statGrid.appendChild(statTile(grade.mastery+'%','Mastery'));
+    statGrid.appendChild(statTile(grade.accuracy+'%','Lifetime Accuracy'));
+    statGrid.appendChild(statTile(grade.coverage+'%','Curriculum Coverage'));
+    statGrid.appendChild(statTile(String((PROGRESS.history||[]).length),'Sessions Completed'));
+    wrap.appendChild(statGrid);
+    wrap.appendChild(el('div','sync-note', attemptedCount()+' of '+ALL_ITEMS.length+' cards attempted at least once · '+totalQuestionsAnswered()+' questions answered all-time.'));
+
+    var trend = recentTrend();
+    if(trend){
+      var dir = trend.delta > 2 ? 'up' : (trend.delta < -2 ? 'down' : 'flat');
+      var arrow = dir==='up' ? '↑' : (dir==='down' ? '↓' : '→');
+      var msg = dir==='flat'
+        ? ('Holding steady — last '+trend.n+' sessions averaged '+trend.recentAvg+'%, about the same as the '+trend.n+' before that.')
+        : ('Last '+trend.n+' sessions averaged '+trend.recentAvg+'%, '+(dir==='up'?'up from ':'down from ')+trend.priorAvg+'% before — '+(trend.delta>=0?'+':'')+trend.delta+' points.');
+      wrap.appendChild(el('div','trend-note '+dir, arrow+' '+msg));
+    }
+
+    wrap.appendChild(el('div','section-label','Accuracy by Category'));
+    var catList = el('div','breakdown-list');
+    [['grammar','Grammar'],['verbs','Verbs'],['vocab','Vocabulary']].forEach(function(c){
+      catList.appendChild(gradeBreakdownRow(c[1], categoryAccuracy(c[0])));
+    });
+    wrap.appendChild(catList);
+
+    wrap.appendChild(el('div','section-label','By Study Method'));
+    var stats = modeStats();
+    var modeKeys = Object.keys(stats);
+    if(!modeKeys.length){
+      wrap.appendChild(el('div','sync-note','Complete a Quiz, Test, or Guided Exercise to see method-by-method scores here.'));
+    } else {
+      var modeList = el('div','breakdown-list');
+      modeKeys.sort(function(a,b){ return stats[b].count - stats[a].count; }).forEach(function(m){
+        var s = stats[m];
+        var avg = Math.round(s.sum/s.count);
+        var name = (MODE_LABELS[m]||m) + ' ('+s.count+(s.count===1?' session)':' sessions)');
+        modeList.appendChild(gradeBreakdownRow(name, avg));
+      });
+      wrap.appendChild(modeList);
+    }
+
+    wrap.appendChild(el('div','section-label','By Skill Type'));
+    var skillList = el('div','breakdown-list');
+    var conj = typeAccuracy(['conjugate']);
+    var es2en = typeAccuracy(['vocab-es2en']);
+    var en2es = typeAccuracy(['vocab-en2es']);
+    skillList.appendChild(gradeBreakdownRow('Verb Conjugation', conj.pct));
+    skillList.appendChild(gradeBreakdownRow('Spanish → English Recall', es2en.pct));
+    skillList.appendChild(gradeBreakdownRow('English → Spanish Recall', en2es.pct));
+    wrap.appendChild(skillList);
+    if(es2en.pct !== null && en2es.pct !== null && Math.abs(es2en.pct - en2es.pct) >= 12){
+      var harder = es2en.pct < en2es.pct ? 'recognizing Spanish and recalling the English' : 'recalling Spanish from English';
+      wrap.appendChild(el('div','sync-note','Noticeably weaker at '+harder+' — worth extra reps in that direction.'));
+    }
+
+    wrap.appendChild(el('div','section-label','Every Topic — Weakest First'));
+    wrap.appendChild(el('p','page-desc','Tap any topic to jump straight into an 8-question quiz on it.'));
+    var topicList = el('div','breakdown-list');
+    TOPICS.map(function(t){ return {t:t, acc:topicAccuracy(t.id)}; })
+      .sort(function(a,b){
+        if(a.acc===null && b.acc===null) return 0;
+        if(a.acc===null) return 1;
+        if(b.acc===null) return -1;
+        return a.acc - b.acc;
+      })
+      .forEach(function(x){
+        var row = gradeBreakdownRow(x.t.name, x.acc, function(){
+          startSession('quiz', pickTopicSession(x.t.id, 8), 'Quiz — '+x.t.name);
+        });
+        topicList.appendChild(row);
+      });
+    wrap.appendChild(topicList);
+
     return wrap;
   }
 

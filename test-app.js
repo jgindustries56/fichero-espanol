@@ -8,7 +8,7 @@ const scriptBody = blocks.find(b => b.includes('(function(){'));
 if (!scriptBody) throw new Error('could not locate the main app <script> block');
 let code = scriptBody;
 code = code.replace('render();\n  initAuth();\n})();', `
-window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;}};
+window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery};
 window.__fetchCalls__ = () => fetchCalls;
 window.__clearFetchCalls__ = () => { fetchCalls.length = 0; };
 render();
@@ -330,6 +330,76 @@ check('completing a session while signed in mirrors to the Sheets endpoint (fetc
   const sentBody = JSON.parse(callsSignedIn[0].opts.body);
   if(sentBody.total !== 3 || sentBody.label !== 'Quiz — Food (signed in)') throw new Error('unexpected session-complete payload: '+JSON.stringify(sentBody));
   T.AUTH.user = null;
+});
+
+check('report card shows the empty state with no practice recorded', ()=>{
+  T.setProgress({items:{}, streak:{count:0,last:null}, history:[]});
+  T.go('grades');
+  const tree = T.gradesView();
+  const notes = findAll(tree, n => hasClass(n,'sync-note'));
+  if(!notes.length || !/No practice recorded/.test(notes[0].innerHTML)) throw new Error('expected the no-data empty state, got: '+JSON.stringify(notes.map(n=>n.innerHTML)));
+  const heroes = findAll(tree, n => hasClass(n,'grade-hero'));
+  if(heroes.length) throw new Error('should not show a grade hero before anything has been practiced');
+});
+
+check('report card grade formula matches its displayed inputs, and topics sort weakest-first', ()=>{
+  T.setProgress({items:{}, streak:{count:0,last:null}, history:[]});
+  // Drive real sessions across a couple of topics so mastery/accuracy/coverage
+  // are all non-trivial and independently verifiable against the raw items.
+  driveByClicking(T.pickTopicSession('ser-estar', 6), 'quiz', 'Quiz — Ser vs. Estar');
+  driveByClicking(T.pickTopicSession('vocab-food', 6), 'test', 'Test — Food');
+
+  const grade = T.compositeGrade();
+  const expectedScore = Math.round(grade.mastery*0.4 + grade.accuracy*0.35 + grade.coverage*0.25);
+  if(grade.score !== expectedScore) throw new Error('composite score does not match its own formula: got '+grade.score+' expected '+expectedScore);
+  if(grade.mastery !== T.overallMastery()) throw new Error('grade.mastery should equal overallMastery()');
+  const expectedLetter = grade.score>=90?'A':grade.score>=80?'B':grade.score>=70?'C':grade.score>=60?'D':'F';
+  if(grade.letter !== expectedLetter) throw new Error('letter grade '+grade.letter+' does not match score '+grade.score);
+
+  T.go('grades');
+  const tree = T.gradesView();
+  const hero = findAll(tree, n => hasClass(n,'grade-hero'));
+  if(hero.length !== 1) throw new Error('expected exactly one grade hero once practice exists');
+
+  const topicRows = findAll(tree, n => hasClass(n,'topic-row'));
+  if(topicRows.length !== T.TOPICS.length) throw new Error('expected one row per topic, got '+topicRows.length+' for '+T.TOPICS.length+' topics');
+  // Rows carry their percentage as the last child's text — verify non-increasing (weakest/unattempted first).
+  const pcts = topicRows.map(r => {
+    const numEl = r.children[r.children.length-1];
+    const txt = numEl.innerHTML;
+    return txt === '—' ? -1 : parseInt(txt, 10); // unattempted sorts logically after any real percentage
+  });
+  for(let i=1;i<pcts.length;i++){
+    const prev = pcts[i-1]===-1 ? Infinity : pcts[i-1];
+    const cur = pcts[i]===-1 ? Infinity : pcts[i];
+    if(cur < prev) throw new Error('topic rows are not sorted weakest-first: '+JSON.stringify(pcts));
+  }
+});
+
+check('clicking a topic row on the report card starts a quiz for that exact topic', ()=>{
+  T.go('grades');
+  const tree = T.gradesView();
+  const row = findAll(tree, n => hasClass(n,'topic-row'))[0];
+  if(typeof row.onclick !== 'function') throw new Error('topic row has no click handler');
+  row.onclick();
+  if(T.state.view !== 'session') throw new Error('clicking a topic row should start a session, view is '+T.state.view);
+  if(!/^Quiz — /.test(T.state.sessionLabel)) throw new Error('expected a Quiz session label, got '+T.state.sessionLabel);
+  if(T.state.sessionItems.length !== 8) throw new Error('topic-row quiz should be 8 questions, got '+T.state.sessionItems.length);
+});
+
+check('skill-type and by-method breakdowns stay internally consistent', ()=>{
+  const conj = T.typeAccuracy(['conjugate']);
+  const es2en = T.typeAccuracy(['vocab-es2en']);
+  const en2es = T.typeAccuracy(['vocab-en2es']);
+  [conj, es2en, en2es].forEach(x => {
+    if(x.pct !== null && (x.pct < 0 || x.pct > 100)) throw new Error('skill-type pct out of range: '+JSON.stringify(x));
+  });
+  const stats = T.modeStats();
+  if(!stats.quiz || !stats.test) throw new Error('expected quiz and test mode stats after the driven sessions above, got: '+JSON.stringify(stats));
+  Object.keys(stats).forEach(m => {
+    const avg = stats[m].sum/stats[m].count;
+    if(avg < 0 || avg > 100) throw new Error('mode avg out of range for '+m+': '+avg);
+  });
 });
 
 check('a session completes and logs fine even when loaded progress predates the history field', ()=>{
