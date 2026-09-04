@@ -8,7 +8,7 @@ const scriptBody = blocks.find(b => b.includes('(function(){'));
 if (!scriptBody) throw new Error('could not locate the main app <script> block');
 let code = scriptBody;
 code = code.replace('render();\n  initAuth();\n})();', `
-window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery};
+window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,answeredToday:answeredToday,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable};
 window.__fetchCalls__ = () => fetchCalls;
 window.__clearFetchCalls__ = () => { fetchCalls.length = 0; };
 render();
@@ -414,6 +414,239 @@ check('a session completes and logs fine even when loaded progress predates the 
   driveByClicking(T.pickTopicSession('regular-verbs',4), 'quiz', 'Quiz — Regular Verbs');
   const history = T.getProgress().history;
   if(!Array.isArray(history) || history.length !== 1) throw new Error('expected exactly one logged entry, got '+JSON.stringify(history));
+});
+
+
+/* ============================================================
+   Upgrade pass: new decks, settings, home surfaces, reference
+   ============================================================ */
+
+check('every topic has an icon', ()=>{
+  T.TOPICS.forEach(t=>{
+    if(!T.TOPIC_ICONS[t.id]) throw new Error('no icon for topic '+t.id);
+    if(!T.topicIcon(t.id)) throw new Error('topicIcon returned nothing for '+t.id);
+  });
+});
+
+check('settings fall back to defaults and round-trip', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const d = T.settings();
+  if(d.quizSize !== 12 || d.typedFrom !== 2 || d.dailyGoal !== 30) throw new Error('unexpected defaults: '+JSON.stringify(d));
+  T.setSetting('quizSize', 20);
+  if(T.settings().quizSize !== 20) throw new Error('setting did not stick');
+  if(T.settings().testSize !== 30) throw new Error('unrelated setting was clobbered');
+  T.setSetting('quizSize', 12);
+});
+
+check('migration backfills days from existing history without inventing a streak', ()=>{
+  const p = T.migrateProgress({ items:{}, streak:{count:2,last:'2026-09-01'},
+    history:[{date:'2026-08-30', mode:'quiz', label:'Quiz', correct:4, total:5, pct:80}] });
+  if(p.days['2026-08-30'] !== 5) throw new Error('history day not backfilled: '+JSON.stringify(p.days));
+  if(p.days['2026-09-01'] !== 1) throw new Error('streak day not backfilled: '+JSON.stringify(p.days));
+  if(!p.settings || !Array.isArray(p.history)) throw new Error('migration left the shape incomplete');
+});
+
+check('answering a card logs a study day and moves the daily goal', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const before = T.answeredToday();
+  T.recordAnswer(T.ALL_ITEMS[0].id, true);
+  T.recordAnswer(T.ALL_ITEMS[1].id, false);
+  if(T.answeredToday() !== before + 2) throw new Error('day counter did not advance: '+T.answeredToday());
+});
+
+check('typedFrom setting actually controls when cards flip to typing', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  // A card correct twice sits at box 1 (starts at -1, +1 per correct).
+  const item = T.ALL_ITEMS.find(it => !!(it.choices || it.pool));
+  T.recordAnswer(item.id, true);
+  T.recordAnswer(item.id, true);
+  T.setSetting('typedFrom', 1);
+  T.startSession('quiz', [item], 'probe');
+  if(T.state.q.mode !== 'typed') throw new Error('expected typed at threshold 1, got '+T.state.q.mode);
+  T.setSetting('typedFrom', 4);
+  T.startSession('quiz', [item], 'probe');
+  if(T.state.q.mode !== 'mc') throw new Error('expected mc at threshold 4, got '+T.state.q.mode);
+  T.setSetting('typedFrom', 2);
+});
+
+check('missed-words deck collects every past miss, weakest first', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  if(T.missedItems().length !== 0) throw new Error('missed deck should start empty');
+  const a = T.ALL_ITEMS[3], b = T.ALL_ITEMS[4];
+  T.recordAnswer(a.id, false);                        // 0/1
+  T.recordAnswer(b.id, false); T.recordAnswer(b.id, true); // 1/2
+  const missed = T.missedItems();
+  if(missed.length !== 2) throw new Error('expected 2 missed cards, got '+missed.length);
+  if(missed[0].id !== a.id) throw new Error('worst hit-rate card should sort first');
+  if(T.methodAvailability('missed').ready !== true) throw new Error('missed deck should be available with 2 cards');
+});
+
+check('missed deck is gated off when nothing has been missed', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const av = T.methodAvailability('missed');
+  if(av.ready) throw new Error('missed deck should be unavailable with an empty deck');
+  if(!av.note) throw new Error('an unavailable deck should say why');
+});
+
+check('speed round is locked until 5 cards are mastered, then draws only from them', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  if(T.methodAvailability('speed').ready) throw new Error('speed should be locked with nothing mastered');
+  const ids = T.ALL_ITEMS.slice(0, 6).map(it=>it.id);
+  ids.forEach(id => { for(let i=0;i<4;i++) T.recordAnswer(id, true); }); // box 3 = mastered
+  if(T.masteredItems().length < 5) throw new Error('setup failed to master enough cards');
+  if(!T.methodAvailability('speed').ready) throw new Error('speed should unlock at 5 mastered');
+  T.startMethod('speed', null);
+  if(T.state.sessionMode !== 'speed') throw new Error('speed session did not start');
+  if(!T.state.speedMs) throw new Error('speed session has no clock');
+  T.state.sessionItems.forEach(it => {
+    if(ids.indexOf(it.id) === -1) throw new Error('speed round pulled a non-mastered card: '+it.id);
+  });
+});
+
+check('running out of time on a speed card counts as a miss', ()=>{
+  const item = T.state.sessionItems[0];
+  const boxBefore = T.getProgress().items[item.id].box;
+  if(boxBefore < 3) throw new Error('setup: expected a mastered card');
+  const fired = T.speedExpire(item);
+  if(!fired) throw new Error('expire should have registered');
+  const after = T.getProgress().items[item.id];
+  if(after.box !== 0) throw new Error('timed-out card should drop to box 0, got '+after.box);
+  if(T.speedExpire(item)) throw new Error('expire must not double-count once answered');
+});
+
+check('full-sentence deck only contains multi-word answers', ()=>{
+  const sents = T.sentenceItems();
+  if(sents.length < 5) throw new Error('expected some full-sentence cards, got '+sents.length);
+  sents.forEach(it => {
+    if(it.answer[0].trim().split(/\s+/).length < 3) throw new Error('short answer in sentence deck: '+it.answer[0]);
+  });
+});
+
+check('listening deck only contains cards whose answer is the Spanish side', ()=>{
+  const ok = ['conjugate','vocab-en2es','typed'];
+  const items = T.listeningItems();
+  if(items.length < 20) throw new Error('expected a usable listening pool, got '+items.length);
+  items.forEach(it => { if(ok.indexOf(it.type) === -1) throw new Error('wrong type in listening deck: '+it.type); });
+  // No speech synthesis in the harness, so the deck must report itself unusable.
+  if(T.speechAvailable()) throw new Error('harness should not claim speech support');
+  if(T.methodAvailability('listening').ready) throw new Error('listening should be gated off without speech support');
+});
+
+check('the new decks are drivable end to end', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  T.ALL_ITEMS.slice(0,8).forEach(it => T.recordAnswer(it.id, false));
+  T.startMethod('missed', null);
+  const n = T.state.sessionItems.length;
+  if(!n) throw new Error('missed session empty');
+  driveByClicking(T.state.sessionItems, 'missed', 'Missed-Words Deck');
+  const sents = T.sentenceItems().slice(0,4);
+  driveByClicking(sents, 'sentence', 'Full-Sentence Drill — All Topics', 'typed');
+});
+
+check('recommended session prefers due cards and never comes up short', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const rec = T.recommendedSession(12);
+  if(rec.length !== 12) throw new Error('recommended session should fill its quota, got '+rec.length);
+  const ids = new Set(rec.map(r=>r.id));
+  if(ids.size !== rec.length) throw new Error('recommended session repeated a card');
+  if(!T.recommendReason()) throw new Error('recommendation should explain itself');
+  // Mark a batch wrong so they are due today, then check they lead the queue.
+  const due = T.ALL_ITEMS.slice(20, 32);
+  due.forEach(it => T.recordAnswer(it.id, false));
+  if(T.dueCount() < 12) throw new Error('expected 12 due cards, got '+T.dueCount());
+  const dueIds = new Set(due.map(it=>it.id));
+  const picked = T.recommendedSession(12).filter(it => dueIds.has(it.id)).length;
+  if(picked !== 12) throw new Error('recommended session ignored due cards: '+picked+'/12');
+});
+
+check('final exam is the right size, unique, and leans on weak topics', ()=>{
+  const exam = T.pickFinalExam(50);
+  if(exam.length !== 50) throw new Error('expected 50 questions, got '+exam.length);
+  const ids = new Set(exam.map(e=>e.id));
+  if(ids.size !== 50) throw new Error('final exam repeated a card');
+  const weak = T.weakestTopics(5);
+  if(weak.length){
+    const fromWeak = exam.filter(e => weak.indexOf(e.topic) !== -1).length;
+    if(fromWeak < 10) throw new Error('final exam barely touched the weak topics: '+fromWeak);
+  }
+});
+
+check('history filters narrow by method and by date', ()=>{
+  const P = T.migrateProgress({items:{}, streak:{count:0,last:null}});
+  P.history = [
+    {date:'2020-01-01', ts:1, mode:'quiz', label:'Old Quiz', correct:5, total:10, pct:50},
+    {date:new Date().toISOString().slice(0,10), ts:2, mode:'test', label:'New Test', correct:9, total:10, pct:90}
+  ];
+  T.setProgress(P);
+  T.go('history', {histMode:'all', histRange:'all'});
+  if(T.filteredHistory().length !== 2) throw new Error('unfiltered history should show both');
+  T.go('history', {histMode:'test', histRange:'all'});
+  if(T.filteredHistory().length !== 1 || T.filteredHistory()[0].mode !== 'test') throw new Error('method filter failed');
+  T.go('history', {histMode:'all', histRange:'7'});
+  const recent = T.filteredHistory();
+  if(recent.length !== 1 || recent[0].label !== 'New Test') throw new Error('date filter failed: '+JSON.stringify(recent));
+  T.historyView();
+  T.go('history', {histMode:'all', histRange:'all'});
+  T.historyView();
+});
+
+check('personal callout compares you only against your own past scores', ()=>{
+  const P = T.migrateProgress({items:{}, streak:{count:0,last:null}});
+  P.history = [
+    {date:'2026-01-01', mode:'quiz', label:'q', correct:5, total:10, pct:50},
+    {date:'2026-01-02', mode:'quiz', label:'q', correct:6, total:10, pct:60},
+    {date:'2026-01-03', mode:'quiz', label:'q', correct:9, total:10, pct:90}
+  ];
+  T.setProgress(P);
+  const msg = T.personalCallout(P.history);
+  if(!msg || msg.indexOf('best') === -1) throw new Error('expected a personal-best callout, got '+msg);
+  if(/friend|rank against|others/i.test(msg)) throw new Error('callout must not compare against other people');
+  if(T.personalCallout(P.history.slice(0,2)) !== null) throw new Error('callout needs enough history first');
+});
+
+check('badges are all locked on a fresh account and unlock on real work', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const fresh = T.badgeDefs();
+  if(!fresh.length) throw new Error('no badges defined');
+  fresh.forEach(b => { if(b.earned) throw new Error('badge earned on a fresh account: '+b.id); });
+  driveByClicking(T.pickTopicSession('regular-verbs',4), 'quiz', 'Quiz — Regular Verbs');
+  const after = T.badgeDefs().filter(b=>b.earned).map(b=>b.id);
+  if(after.indexOf('first-session') === -1) throw new Error('first-session badge did not unlock');
+});
+
+check('home renders with all the new surfaces', ()=>{
+  T.go('home');
+  const tree = T.homeView();
+  if(!findAll(tree, n => hasClass(n,'recommend')).length) throw new Error('no recommended-session card');
+  if(!findAll(tree, n => hasClass(n,'heat-grid')).length) throw new Error('no streak heatmap');
+  if(!findAll(tree, n => hasClass(n,'badge')).length) throw new Error('no milestone badges');
+  if(!findAll(tree, n => hasClass(n,'goal-fill')).length) throw new Error('no daily-goal bar');
+});
+
+check('settings page renders and every control is wired', ()=>{
+  T.go('settings');
+  const tree = T.settingsView();
+  const buttons = findAll(tree, n => n.tagName === 'button');
+  if(buttons.length < 10) throw new Error('settings page looks empty: '+buttons.length+' controls');
+  buttons.forEach(b => { if(typeof b.onclick !== 'function') throw new Error('a settings control has no handler: '+b.innerHTML); });
+});
+
+check('reference sheets render for every topic and contain real rows', ()=>{
+  T.go('reference'); T.referenceView();
+  T.TOPICS.forEach(t=>{
+    T.go('referenceSheet', {topicId:t.id});
+    T.referenceSheetView();
+    const rows = T.referenceRows(t.id);
+    if(!rows.length) throw new Error('empty reference sheet for '+t.id);
+    rows.forEach(r => { if(/[<>]/.test(r.q)) throw new Error('unstripped markup in reference row for '+t.id+': '+r.q); });
+  });
+});
+
+check('no new Spanish was introduced by this upgrade', ()=>{
+  // Standing rule for this project: decks are re-cuts of existing cards, never
+  // new language content. 909 items was the count before the upgrade.
+  if(T.ALL_ITEMS.length !== 909) throw new Error('item count changed to '+T.ALL_ITEMS.length+' — content must not be added without the owner asking');
+  if(T.TOPICS.length !== 20) throw new Error('topic count changed to '+T.TOPICS.length);
 });
 
 // Run matching flows strictly one after another — they mutate the same

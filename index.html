@@ -19,8 +19,12 @@
     --accent-navy-ink:#1E3255;
     --accent-pine:#2F6355;
     --accent-pine-ink:#204A40;
+    /* Fill only (bars, tabs, the speed clock): --on-accent text on this
+       measures 3.25:1, so it must not be used as a text background. */
     --accent-gold:#B87F1F;
-    --accent-gold-ink:#8C6015;
+    /* Darkened from #8C6015: as text on the tinted vocabulary chip it measured
+       4.40:1, just under the 4.5:1 floor for body-size text. Now 4.94:1. */
+    --accent-gold-ink:#82590F;
     --accent-red:#AC3A2C;
     --accent-red-ink:#8A2D22;
     --on-accent:#FBF8EF;
@@ -370,6 +374,133 @@
   .breakdown-row.topic-row:hover .breakdown-name{color:var(--ink); text-decoration:underline;}
   .breakdown-row.unattempted .breakdown-fill{background:var(--surface-2);}
   .breakdown-row.unattempted .breakdown-num{color:var(--ink-soft); opacity:.7;}
+
+  /* ---------- topic icons ---------- */
+  .topic-title{display:flex; align-items:center; gap:8px;}
+  .topic-icon{font-size:1.05rem; line-height:1; flex-shrink:0;}
+
+  /* ---------- recommended session ---------- */
+  .recommend{
+    background:var(--surface); border:1px solid var(--accent-navy); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px 20px; margin-bottom:18px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .recommend-body{flex:1; min-width:200px; display:flex; flex-direction:column; gap:5px;}
+  .recommend-body h3{font-size:1.15rem;}
+  .recommend-body p{margin:0; font-size:.83rem; color:var(--ink-soft); line-height:1.45;}
+  .recommend .btn{flex-shrink:0;}
+
+  /* ---------- daily goal ---------- */
+  .goal-row{display:flex; align-items:center; gap:10px; font-size:.8rem; color:var(--ink-soft); margin-bottom:16px;}
+  .goal-track{flex:1; height:8px; background:var(--surface-2); border-radius:99px; overflow:hidden;}
+  .goal-fill{height:100%; border-radius:99px; background:var(--accent-pine);}
+  .goal-fill.met{background:var(--accent-gold);}
+
+  /* ---------- streak heatmap ---------- */
+  .heatmap{
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px; box-shadow:var(--shadow);
+    padding:14px 18px; margin-bottom:8px; overflow-x:auto;
+  }
+  .heat-grid{display:grid; grid-template-rows:repeat(7,11px); grid-auto-flow:column; grid-auto-columns:11px; gap:3px;}
+  .heat-cell{width:11px; height:11px; border-radius:2px; background:var(--surface-2); border:1px solid transparent;}
+  .heat-cell.l1{background:color-mix(in srgb, var(--accent-pine) 34%, var(--surface-2));}
+  .heat-cell.l2{background:color-mix(in srgb, var(--accent-pine) 62%, var(--surface-2));}
+  .heat-cell.l3{background:var(--accent-pine);}
+  .heat-cell.today{border-color:var(--accent-gold);}
+  .heat-legend{display:flex; align-items:center; gap:6px; font-size:.72rem; color:var(--ink-soft); margin-top:10px;}
+
+  /* ---------- badges ---------- */
+  .badge-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-bottom:8px;}
+  .badge{
+    background:var(--surface); border:1px solid var(--rule); border-radius:10px; padding:12px 14px;
+    display:flex; align-items:center; gap:10px; font-size:.8rem; box-shadow:var(--shadow);
+  }
+  .badge .bicon{font-size:1.3rem; line-height:1;}
+  .badge .bname{font-weight:600;}
+  .badge .bdesc{font-size:.72rem; color:var(--ink-soft); line-height:1.35;}
+  .badge.locked{opacity:.45; box-shadow:none;}
+
+  /* ---------- sparkline ---------- */
+  .sparkline{
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px; box-shadow:var(--shadow);
+    padding:14px 18px; margin-bottom:14px;
+  }
+  .sparkline svg{display:block; width:100%; height:96px; overflow:visible;}
+
+  /* ---------- filters ---------- */
+  .filter-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;}
+  .filter-group{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .filter-label{font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600;}
+  .filter-btn{
+    padding:6px 11px; border-radius:999px; border:1px solid var(--rule); background:var(--surface);
+    font-size:.76rem; font-weight:600; color:var(--ink-soft); cursor:pointer; white-space:nowrap;
+  }
+  .filter-btn.active{background:var(--accent-navy); border-color:var(--accent-navy); color:var(--on-accent);}
+
+  /* ---------- settings ---------- */
+  .setting-card{
+    background:var(--surface); border:1px solid var(--rule); border-radius:12px; box-shadow:var(--shadow);
+    padding:16px 18px; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;
+  }
+  .setting-card h3{font-size:1rem;}
+  .setting-card p{margin:0; font-size:.8rem; color:var(--ink-soft); line-height:1.5;}
+  .setting-control{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .setting-control .btn{flex:0 0 auto;}
+  .setting-value{font-family:'IBM Plex Mono',monospace; font-size:.85rem; font-weight:600; min-width:5.5em;}
+  .setting-input{
+    padding:9px 12px; border-radius:8px; border:1px solid var(--rule); background:var(--surface-2);
+    color:var(--ink); font-size:.88rem; font-family:'IBM Plex Mono',monospace;
+  }
+  .why-note{
+    font-size:.76rem; color:var(--ink-soft); line-height:1.5; border-left:2px solid var(--rule);
+    padding-left:10px; margin-top:2px;
+  }
+
+  /* ---------- speed round timer ---------- */
+  .timer-row{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .timer-track{flex:1; height:6px; background:var(--surface-2); border-radius:99px; overflow:hidden;}
+  .timer-fill{height:100%; border-radius:99px; background:var(--accent-gold); transition:width .2s linear;}
+  .timer-fill.urgent{background:var(--accent-red);}
+  .timer-text{font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--ink-soft); min-width:3.2em; text-align:right;}
+
+  /* ---------- reference sheet ---------- */
+  .ref-table{width:100%; border-collapse:collapse; font-size:.86rem; margin-bottom:20px;}
+  .ref-table th, .ref-table td{border:1px solid var(--rule); padding:7px 10px; text-align:left;}
+  .ref-table th{background:var(--surface-2); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .ref-section{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:18px 20px; margin-bottom:16px; box-shadow:var(--shadow);}
+  .ref-section h3{font-size:1.1rem; margin-bottom:10px;}
+
+  /* ---------- reminder banner ---------- */
+  .reminder-banner{
+    background:color-mix(in srgb, var(--accent-gold) 14%, var(--surface));
+    border:1px solid var(--accent-gold); border-radius:10px; padding:11px 14px;
+    font-size:.83rem; line-height:1.45; margin-bottom:16px; color:var(--accent-gold-ink);
+  }
+
+  /* ---------- tablet + landscape ---------- */
+  @media (min-width:521px) and (max-width:900px){
+    .app-shell{padding:18px 24px 56px;}
+    .dash-grid{grid-template-columns:repeat(2,1fr);}
+    .jump-grid{grid-template-columns:repeat(2,1fr);}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .match-grid{grid-template-columns:repeat(3,1fr);}
+    .session-card{max-width:100%;}
+    .flip-outer{max-width:100%;}
+  }
+  @media (max-height:480px) and (orientation:landscape){
+    .app-shell{padding:12px 20px 40px;}
+    .flip-card, .flip-inner{min-height:170px;}
+    .flip-face{padding:18px 20px;}
+    .card-prompt{font-size:1.2rem;}
+    .card-answer{font-size:1.25rem;}
+    .topbar{padding-bottom:12px; margin-bottom:14px;}
+  }
+
+  @media print{
+    .nav-bar, .topbar, .footer-links, .btn, .back-btn{display:none !important;}
+    .ref-section{break-inside:avoid; box-shadow:none; border-color:#999;}
+    body{background:#fff; color:#000;}
+  }
 </style>
 </head>
 <body style="margin:0;">
@@ -408,6 +539,17 @@
   ];
   var TOPIC_MAP = {};
   TOPICS.forEach(function(t){ TOPIC_MAP[t.id] = t; });
+
+  // A visual anchor per topic. Pairing a picture with the verbal label gives
+  // the eye a second, faster route to the same card (dual coding).
+  var TOPIC_ICONS = {
+    'ser-estar':'\u2696\ufe0f', 'articles':'\ud83c\udff7\ufe0f', 'adjectives':'\ud83c\udfa8', 'indef-neg':'\ud83d\udeab',
+    'pero-sino':'\u2194\ufe0f', 'regular-verbs':'\u2699\ufe0f', 'tener-venir':'\ud83e\udd32', 'ir-verb':'\ud83e\udded',
+    'stem-changing':'\ud83c\udf31', 'vocab-places':'\ud83d\uddfa\ufe0f', 'vocab-food':'\ud83c\udf7d\ufe0f', 'vocab-feelings':'\ud83d\ude0a',
+    'reflexive-verbs':'\ud83e\udea5', 'gustar-verbs':'\u2764\ufe0f', 'vocab-people':'\ud83d\udc65', 'vocab-personality':'\u2728',
+    'vocab-activities':'\ud83c\udfc3', 'vocab-places-2':'\ud83c\udfd9\ufe0f', 'vocab-bathroom':'\ud83d\udec1', 'vocab-routine':'\u23f0'
+  };
+  function topicIcon(id){ return TOPIC_ICONS[id] || '\ud83d\udcd6'; }
 
   var VERBS = {
     regular: [
@@ -860,7 +1002,11 @@
     {id:'flashcards', title:'Flashcards', icon:'🗂️', blurb:'Flip a virtual notecard: see the prompt, try to recall the answer before you reveal it, then rate yourself honestly. The classic notecard method — self-testing before checking beats just re-reading.'},
     {id:'typed-drill', title:'Fill-in-the-Blank', icon:'⌨️', blurb:'Type every answer from memory — no multiple-choice safety net. Producing an answer yourself is harder, and more effective, than just recognizing it (a "desirable difficulty").'},
     {id:'mc-drill', title:'Multiple Choice Drill', icon:'☑️', blurb:'A lower-pressure warm-up: recognize the right answer among a few options. Good for a first pass on new material before you\'re ready to produce it from scratch.'},
-    {id:'matching', title:'Matching Pairs', icon:'🔗', blurb:'Match each Spanish term to its meaning. Actively building the connection yourself, instead of just seeing the two side by side, makes the pairing stick ("elaborative encoding").'}
+    {id:'matching', title:'Matching Pairs', icon:'🔗', blurb:'Match each Spanish term to its meaning. Actively building the connection yourself, instead of just seeing the two side by side, makes the pairing stick ("elaborative encoding").'},
+    {id:'missed', title:'Missed-Words Deck', icon:'\ud83c\udfaf', blurb:'Every card you have ever gotten wrong, in one standing deck \u2014 not just the last session\u2019s misses. Retrieval practice pays off most exactly where memory is weakest (Roediger & Karpicke, 2006).'},
+    {id:'sentence', title:'Full-Sentence Drill', icon:'\u270d\ufe0f', blurb:'Type whole sentences, not single words \u2014 translations and negative transforms from the material you already have. Producing a full answer yourself beats recognising one (the generation effect: Slamecka & Graf, 1978).'},
+    {id:'listening', title:'Listening Drill', icon:'\ud83c\udfa7', blurb:'Your device reads a Spanish answer aloud and you type what you heard. Adds an auditory channel alongside the visual one (dual coding). Voice quality depends on the Spanish voices your browser has installed.'},
+    {id:'speed', title:'Timed Speed Round', icon:'\u26a1', blurb:'Mastered cards only, against a clock. Time pressure is a useful difficulty once material is solid and a harmful one while it is still new, so this deck stays locked to cards you have already mastered (Bjork).'}
   ];
 
   var NAV_ITEMS = [
@@ -871,7 +1017,9 @@
     {id:'guided', label:'Guided Exercises'},
     {id:'methods', label:'Study Methods'},
     {id:'history', label:'History'},
-    {id:'grades', label:'Report Card'}
+    {id:'grades', label:'Report Card'},
+    {id:'reference', label:'Reference'},
+    {id:'settings', label:'Settings'}
   ];
 
   /* ============================= ITEM BUILDERS ============================= */
@@ -1105,7 +1253,43 @@
     return {items:{}, streak:{count:0,last:null}};
   }
   var PROGRESS = loadProgress();
-  if(!PROGRESS.history) PROGRESS.history = []; // upgrade path for progress saved before session history existed
+  migrateProgress(PROGRESS);
+
+  // Every field added after v1 shipped is filled in here rather than at each
+  // use site, so older saved progress (local or synced down from an account)
+  // is always the same shape as fresh progress.
+  function migrateProgress(P){
+    if(!P.history) P.history = [];
+    if(!P.settings) P.settings = {};
+    if(!P.days){
+      P.days = {};
+      // Backfill the study-day log from session history so an existing user's
+      // calendar isn't blank on the day this ships.
+      P.history.forEach(function(h){ if(h.date) P.days[h.date] = (P.days[h.date]||0) + (h.total||1); });
+      if(P.streak && P.streak.last && !P.days[P.streak.last]) P.days[P.streak.last] = 1;
+    }
+    if(!P.streak) P.streak = {count:0, last:null};
+    if(!P.items) P.items = {};
+    return P;
+  }
+
+  var DEFAULT_SETTINGS = {
+    dailyGoal:30, quizSize:12, testSize:30, typedFrom:2,
+    reminderTime:'', theme:'system', textScale:100
+  };
+  function settings(){
+    var out = {};
+    var saved = PROGRESS.settings || {};
+    Object.keys(DEFAULT_SETTINGS).forEach(function(k){
+      out[k] = (saved[k] === undefined || saved[k] === null) ? DEFAULT_SETTINGS[k] : saved[k];
+    });
+    return out;
+  }
+  function setSetting(k, v){
+    if(!PROGRESS.settings) PROGRESS.settings = {};
+    PROGRESS.settings[k] = v;
+    saveProgress();
+  }
 
   function saveProgress(){
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
@@ -1205,6 +1389,7 @@
       p.due = todayStr();
     }
     PROGRESS.items[id] = p;
+    bumpDay();
     bumpStreak();
     saveProgress();
   }
@@ -1215,9 +1400,19 @@
     if(gotIt){ p.box = Math.max(p.box,1); p.due = daysFromToday(INTERVALS[1]); }
     else { p.box = 0; p.due = todayStr(); }
     PROGRESS.items[id] = p;
+    bumpDay();
     bumpStreak();
     saveProgress();
   }
+
+  // Counts answers per calendar day. Separate from the streak (which only
+  // records whether a day happened) because the daily goal needs the volume.
+  function bumpDay(){
+    if(!PROGRESS.days) PROGRESS.days = {};
+    var t = todayStr();
+    PROGRESS.days[t] = (PROGRESS.days[t]||0) + 1;
+  }
+  function answeredToday(){ return (PROGRESS.days && PROGRESS.days[todayStr()]) || 0; }
 
   function bumpStreak(){
     var t = todayStr();
@@ -1237,6 +1432,105 @@
   function isDue(id){ var p = getProg(id); return !p || p.due <= todayStr(); }
   function isUnseen(id){ var p = getProg(id); return !p; }
   function boxOf(id){ var p = getProg(id); return p ? p.box : -1; }
+
+  /* ---------- standing decks ----------
+     Each of these is a filter over the same card set, not new content: the
+     app never invents Spanish, it only re-cuts what's already in the deck. */
+
+  // Cards actually scheduled for review today (seen before and now due).
+  // Deliberately excludes never-seen cards, which are "new", not "due".
+  function dueItems(){
+    return ALL_ITEMS.filter(function(it){ var p = getProg(it.id); return p && p.due <= todayStr(); });
+  }
+  function dueCount(){ return dueItems().length; }
+  function newCount(){ return ALL_ITEMS.filter(function(it){ return isUnseen(it.id); }).length; }
+
+  // Everything ever missed, weakest hit-rate first — the standing version of
+  // the end-of-session "Review Mistakes", which only ever saw one session.
+  function missedItems(){
+    return ALL_ITEMS.filter(function(it){ var p = getProg(it.id); return p && p.incorrect > 0; })
+      .sort(function(a,b){
+        var pa = getProg(a.id), pb = getProg(b.id);
+        var ra = pa.correct/Math.max(pa.seen,1), rb = pb.correct/Math.max(pb.seen,1);
+        if(ra !== rb) return ra - rb;
+        return pb.incorrect - pa.incorrect;
+      });
+  }
+
+  // Answers of three words or more: the translation and negative-transform
+  // cards, which are the only full-sentence productions in the material.
+  function sentenceItems(){
+    return ALL_ITEMS.filter(function(it){
+      var a = (it.answer[0]||'').trim();
+      return a.split(/\s+/).length >= 3;
+    });
+  }
+
+  // Cards whose answer is the Spanish side, so a spoken prompt is meaningful.
+  function listeningItems(){
+    return ALL_ITEMS.filter(function(it){
+      return (it.type === 'conjugate' || it.type === 'vocab-en2es' || it.type === 'typed')
+        && (it.answer[0]||'').length <= 60;
+    });
+  }
+
+  function masteredItems(){ return ALL_ITEMS.filter(function(it){ return isMastered(it.id); }); }
+
+  // Weakest topics by hit rate, attempted ones only — untouched topics aren't
+  // "weak", they're unknown, and get picked up by the due/new terms instead.
+  function weakestTopics(n){
+    return TOPICS.map(function(t){ return {id:t.id, acc:topicAccuracy(t.id)}; })
+      .filter(function(x){ return x.acc !== null; })
+      .sort(function(a,b){ return a.acc - b.acc; })
+      .slice(0, n)
+      .map(function(x){ return x.id; });
+  }
+
+  // One button instead of a menu: due cards first (that's the whole point of
+  // a review schedule), topped up from the weakest topics, then from anything
+  // unseen. Fewer decisions before starting means more sessions actually get
+  // started (Hick's law).
+  function recommendedSession(n){
+    var out = [], used = {};
+    function add(list){
+      list.forEach(function(it){
+        if(out.length >= n || used[it.id]) return;
+        used[it.id] = 1; out.push(it);
+      });
+    }
+    add(shuffled(dueItems()));
+    weakestTopics(3).forEach(function(tid){ add(shuffled(ITEMS_BY_TOPIC[tid]||[])); });
+    add(shuffled(ALL_ITEMS.filter(function(it){ return isUnseen(it.id); })));
+    add(shuffled(ALL_ITEMS));
+    return shuffled(out);
+  }
+  function recommendReason(){
+    var d = dueCount();
+    if(d >= 5) return d + ' cards are due for review today \u2014 due cards come first.';
+    var weak = weakestTopics(1);
+    if(weak.length) return 'Due cards first, then extra reps on your weakest topics (' + TOPIC_MAP[weak[0]].name + ' is lowest right now).';
+    return 'A mixed opening session across every topic, to find out where you stand.';
+  }
+
+  /* ---------- milestones ----------
+     Competence feedback, tied to things that actually took work. No fake
+     urgency and nothing that expires. */
+  function badgeDefs(){
+    var streak = PROGRESS.streak.count||0;
+    var topicsMastered = TOPICS.filter(function(t){ return topicMastery(t.id) >= 80; }).length;
+    var sessions = (PROGRESS.history||[]).length;
+    var perfect = (PROGRESS.history||[]).filter(function(h){ return h.pct === 100 && h.total >= 8; }).length;
+    return [
+      {id:'first-session', icon:'\ud83c\udf31', name:'First Session', desc:'Completed your first session.', earned: sessions >= 1},
+      {id:'streak-3', icon:'\ud83d\udd25', name:'3-Day Streak', desc:'Studied three days running.', earned: streak >= 3},
+      {id:'streak-7', icon:'\ud83d\udcc5', name:'7-Day Streak', desc:'A full week without a gap.', earned: streak >= 7},
+      {id:'century', icon:'\ud83d\udcaf', name:'100 Cards Seen', desc:'Attempted 100 different cards.', earned: attemptedCount() >= 100},
+      {id:'topic-master', icon:'\ud83c\udfc5', name:'Topic Mastered', desc:'Took a topic past 80% mastery.', earned: topicsMastered >= 1},
+      {id:'five-topics', icon:'\ud83c\udf96\ufe0f', name:'Five Topics Mastered', desc:'Five topics past 80% mastery.', earned: topicsMastered >= 5},
+      {id:'flawless', icon:'\u2b50', name:'Flawless Round', desc:'A perfect score on a session of 8+ questions.', earned: perfect >= 1},
+      {id:'clean-slate', icon:'\ud83e\uddf9', name:'Clean Slate', desc:'Cleared the Missed-Words deck to nothing.', earned: sessions >= 3 && attemptedCount() > 0 && missedItems().length === 0}
+    ];
+  }
 
   function topicMastery(topicId){
     var items = ITEMS_BY_TOPIC[topicId] || [];
@@ -1288,7 +1582,9 @@
   }
   var MODE_LABELS = {
     quiz:'Quiz', test:'Test', guided:'Guided Exercises',
-    'typed-drill':'Fill-in-the-Blank Drill', 'mc-drill':'Multiple Choice Drill', review:'Mistake Review'
+    'typed-drill':'Fill-in-the-Blank Drill', 'mc-drill':'Multiple Choice Drill', review:'Mistake Review',
+    recommended:'Recommended Session', missed:'Missed-Words Deck', sentence:'Full-Sentence Drill',
+    listening:'Listening Drill', speed:'Timed Speed Round', final:'Comprehensive Final Exam'
   };
 
   // Compares the average of the most recent sessions against the batch
@@ -1358,7 +1654,7 @@
     if(item.type === 'typed') return 'typed';
     if(item.type === 'mc') return 'mc';
     var box = boxOf(item.id);
-    return box >= 2 ? 'typed' : 'mc';
+    return box >= settings().typedFrom ? 'typed' : 'mc';
   }
 
   function distractorsFor(item){
@@ -1385,18 +1681,95 @@
     return {mode:mode, opts:opts};
   }
 
+  /* ============================= DISPLAY SETTINGS =============================
+     Applied to the document root rather than to individual components, so a
+     smaller or larger interface costs nothing at each call site. Guarded for
+     the headless test harness, which has no documentElement. */
+  function applyDisplaySettings(){
+    var root = (typeof document !== 'undefined') && document.documentElement;
+    if(!root || !root.style) return;
+    var st = settings();
+    if(st.theme === 'system'){ if(root.removeAttribute) root.removeAttribute('data-theme'); }
+    else if(root.setAttribute){ root.setAttribute('data-theme', st.theme); }
+    root.style.fontSize = (st.textScale||100) + '%';
+  }
+
+  // Progress is the learner's, so it has to be possible to take it out.
+  function downloadFile(filename, text, mime){
+    try{
+      var blob = new Blob([text], {type: mime || 'text/plain'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 0);
+      return true;
+    }catch(e){ return false; }
+  }
+  function exportJSON(){
+    downloadFile('fichero-progress.json', JSON.stringify(PROGRESS, null, 2), 'application/json');
+  }
+  function exportCSV(){
+    var rows = [['date','mode','label','correct','total','pct']];
+    (PROGRESS.history||[]).forEach(function(h){
+      rows.push([h.date, h.mode, '"'+String(h.label||'').replace(/"/g,'""')+'"', h.correct, h.total, h.pct]);
+    });
+    downloadFile('fichero-sessions.csv', rows.map(function(r){ return r.join(','); }).join('\n'), 'text/csv');
+  }
+
+  /* ---------- speech (listening drill) ---------- */
+  function speechAvailable(){
+    return typeof window !== 'undefined' && !!window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function';
+  }
+  function speak(text){
+    if(!speechAvailable()) return false;
+    try{
+      window.speechSynthesis.cancel();
+      var u = new window.SpeechSynthesisUtterance(text);
+      u.lang = 'es-ES';
+      u.rate = 0.9;
+      var voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+      var es = voices.filter(function(v){ return (v.lang||'').toLowerCase().indexOf('es') === 0; })[0];
+      if(es) u.voice = es;
+      window.speechSynthesis.speak(u);
+      return true;
+    }catch(e){ return false; }
+  }
+
   /* ============================= APP STATE / ROUTER ============================= */
   var state = { view:'home', infoOpen:false };
   var app = $('#app');
 
+  /* ---------- speed round clock ----------
+     The countdown ticks through a real interval, which only exists in a real
+     browser; the harness has no requestAnimationFrame, so the clock stays off
+     there and the expiry logic is tested directly instead. */
+  var speedTimer = null;
+  function clearSpeedTimer(){
+    if(speedTimer !== null){ clearInterval(speedTimer); speedTimer = null; }
+  }
+  function speedRemaining(){
+    if(!state.speedDeadline) return 0;
+    return Math.max(0, state.speedDeadline - Date.now());
+  }
+  // Running out of time counts as a miss: the card goes back to box 0 and
+  // comes back tomorrow, exactly as if it had been answered wrong.
+  function speedExpire(item){
+    if(state.sessionAnswered) return false;
+    submitAnswer(item, '', false);
+    return true;
+  }
+
   function go(view, extra){
+    clearSpeedTimer();
     state.view = view;
     Object.assign(state, extra||{});
     render();
     window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
   }
 
-  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1, history:1, grades:1};
+  var HUB_VIEWS = {home:1, study:1, quiz:1, test:1, guided:1, guidedIntro:1, methods:1, methodPicker:1, results:1, history:1, grades:1, settings:1, reference:1, referenceSheet:1};
 
   function render(){
     app.innerHTML = '';
@@ -1417,6 +1790,9 @@
     else if(state.view === 'matching') app.appendChild(matchingView());
     else if(state.view === 'history') app.appendChild(historyView());
     else if(state.view === 'grades') app.appendChild(gradesView());
+    else if(state.view === 'settings') app.appendChild(settingsView());
+    else if(state.view === 'reference') app.appendChild(referenceView());
+    else if(state.view === 'referenceSheet') app.appendChild(referenceSheetView());
   }
 
   function ringSvg(pct, size){
@@ -1558,28 +1934,122 @@
     return wrap;
   }
 
+  /* ---------- history filtering ---------- */
+  var RANGE_OPTIONS = [
+    {id:'all', label:'All time', days:null},
+    {id:'7', label:'Last 7 days', days:7},
+    {id:'30', label:'Last 30 days', days:30}
+  ];
+  function filteredHistory(){
+    var hist = (PROGRESS.history||[]).slice();
+    var mode = state.histMode || 'all';
+    var range = state.histRange || 'all';
+    if(mode !== 'all') hist = hist.filter(function(h){ return h.mode === mode; });
+    var days = (RANGE_OPTIONS.filter(function(r){ return r.id === range; })[0]||{}).days;
+    if(days){
+      var cutoff = daysFromToday(-days);
+      hist = hist.filter(function(h){ return (h.date||'') >= cutoff; });
+    }
+    return hist;
+  }
+
+  // A line reads faster than a column of numbers — same information, second
+  // channel, less work to see the shape of it.
+  function sparklineCard(hist){
+    var wrap = el('div','sparkline');
+    var pts = hist.map(function(h){ return h.pct; });
+    var w = 600, h = 96, pad = 6;
+    var n = pts.length;
+    var x = function(i){ return n === 1 ? w/2 : pad + i*(w-2*pad)/(n-1); };
+    var y = function(v){ return h - pad - (v/100)*(h-2*pad); };
+    var d = pts.map(function(v,i){ return (i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1); }).join(' ');
+    var dots = pts.map(function(v,i){
+      return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="2.5" fill="var(--accent-navy)"/>';
+    }).join('');
+    wrap.innerHTML = '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="Score trend">'
+      + '<line x1="0" y1="'+y(50).toFixed(1)+'" x2="'+w+'" y2="'+y(50).toFixed(1)+'" stroke="var(--rule)" stroke-width="1" stroke-dasharray="4 4"/>'
+      + '<path d="'+d+'" fill="none" stroke="var(--accent-navy)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+      + dots + '</svg>'
+      + '<div class="heat-legend">Oldest to newest, left to right. Dashed line is 50%.</div>';
+    return wrap;
+  }
+
+  // Compared against your own past scores, never against anyone else's —
+  // self-referenced feedback supports a mastery orientation, where social
+  // comparison mostly discourages whoever is behind (Dweck).
+  function personalCallout(hist){
+    if(hist.length < 3) return null;
+    var last = hist[hist.length-1];
+    var sameMode = hist.filter(function(h){ return h.mode === last.mode; });
+    var better = sameMode.filter(function(h){ return h.pct > last.pct; }).length;
+    var rank = better + 1;
+    var name = MODE_LABELS[last.mode] || last.mode;
+    if(sameMode.length < 2) return null;
+    var suffix = rank === 1 ? 'best' : (rank === 2 ? '2nd-best' : (rank === 3 ? '3rd-best' : rank+'th-best'));
+    if(rank > 3 && rank > sameMode.length/2) return null;
+    return 'Your most recent ' + name + ' (' + last.pct + '%) is your ' + suffix + ' out of ' + sameMode.length + '.';
+  }
+
+  function filterButtons(wrap){
+    var row = el('div','filter-row');
+
+    var modeGroup = el('div','filter-group');
+    modeGroup.appendChild(el('span','filter-label','Method'));
+    var modes = [{id:'all', label:'All'}];
+    Object.keys(modeStats()).forEach(function(m){ modes.push({id:m, label:MODE_LABELS[m]||m}); });
+    modes.forEach(function(m){
+      var b = el('button','filter-btn'+((state.histMode||'all')===m.id?' active':''), m.label);
+      b.onclick = function(){ state.histMode = m.id; render(); };
+      modeGroup.appendChild(b);
+    });
+    row.appendChild(modeGroup);
+
+    var rangeGroup = el('div','filter-group');
+    rangeGroup.appendChild(el('span','filter-label','When'));
+    RANGE_OPTIONS.forEach(function(r){
+      var b = el('button','filter-btn'+((state.histRange||'all')===r.id?' active':''), r.label);
+      b.onclick = function(){ state.histRange = r.id; render(); };
+      rangeGroup.appendChild(b);
+    });
+    row.appendChild(rangeGroup);
+
+    wrap.appendChild(row);
+  }
+
   function historyView(){
     var wrap = el('div','');
     wrap.appendChild(el('h2','page-title','History'));
-    wrap.appendChild(el('p','page-desc','Every completed Quiz, Test, Guided session, and drill — most recent first. This is exactly what "Recent Activity" on Home shows, in full.'));
+    wrap.appendChild(el('p','page-desc','Every completed session, most recent first \u2014 filterable by method and date, with your score trend on top.'));
 
-    var history = (PROGRESS.history||[]).slice().reverse();
-    if(history.length){
-      var totalSessions = history.length;
-      var avgPct = Math.round(history.reduce(function(s,h){return s+h.pct;},0) / totalSessions);
-      var statGrid = el('div','stat-grid');
-      statGrid.appendChild(statTile(String(totalSessions), totalSessions===1?'Session Completed':'Sessions Completed'));
-      statGrid.appendChild(statTile(avgPct+'%', 'Average Score'));
-      wrap.appendChild(statGrid);
+    if(!(PROGRESS.history||[]).length){
+      wrap.appendChild(el('div','sync-note','No sessions yet \u2014 take a Quiz or Test to see your scores show up here.'));
+      return wrap;
     }
+
+    filterButtons(wrap);
+
+    var hist = filteredHistory();
+    if(!hist.length){
+      wrap.appendChild(el('div','sync-note','No sessions match that filter. Widen the date range or pick a different method.'));
+      return wrap;
+    }
+
+    var avgPct = Math.round(hist.reduce(function(s,h){return s+h.pct;},0) / hist.length);
+    var best = hist.reduce(function(a,h){ return h.pct > a.pct ? h : a; }, hist[0]);
+    var statGrid = el('div','stat-grid');
+    statGrid.appendChild(statTile(String(hist.length), hist.length===1?'Session Shown':'Sessions Shown'));
+    statGrid.appendChild(statTile(avgPct+'%', 'Average Score'));
+    statGrid.appendChild(statTile(best.pct+'%', 'Personal Best'));
+    wrap.appendChild(statGrid);
+
+    if(hist.length >= 2) wrap.appendChild(sparklineCard(hist));
+
+    var callout = personalCallout(PROGRESS.history||[]);
+    if(callout) wrap.appendChild(el('div','trend-note up', '\u2605 ' + callout));
 
     var list = el('div','history-list');
-    if(!history.length){
-      wrap.appendChild(el('div','sync-note','No sessions yet — take a Quiz or Test to see your scores show up here.'));
-    } else {
-      history.forEach(function(entry){ list.appendChild(historyRow(entry)); });
-      wrap.appendChild(list);
-    }
+    hist.slice().reverse().forEach(function(entry){ list.appendChild(historyRow(entry)); });
+    wrap.appendChild(list);
     return wrap;
   }
 
@@ -1692,15 +2162,104 @@
     return wrap;
   }
 
+  // An implementation intention ("I will study at 7pm") follows through far
+  // more reliably than a bare intention to study more. This is the in-app
+  // form of that: real push notifications with the tab closed would need a
+  // service worker and a permission prompt, which is a separate decision.
+  function reminderBanner(){
+    var st = settings();
+    if(!st.reminderTime) return null;
+    if(answeredToday() >= st.dailyGoal) return null;
+    var now = new Date();
+    var parts = st.reminderTime.split(':');
+    var mins = (parseInt(parts[0],10)||0)*60 + (parseInt(parts[1],10)||0);
+    if(now.getHours()*60 + now.getMinutes() < mins) return null;
+    return el('div','reminder-banner','\u23f0 It\'s past your '+st.reminderTime+' study time \u2014 '+
+      (answeredToday() ? (answeredToday()+' of '+st.dailyGoal+' cards done today.') : 'nothing done today yet.'));
+  }
+
+  function recommendCard(){
+    var box = el('div','recommend');
+    var body = el('div','recommend-body');
+    body.appendChild(el('h3','','Recommended Session'));
+    body.appendChild(el('p','', recommendReason()));
+    box.appendChild(body);
+    var btn = el('button','btn btn-primary btn-lg','Start \u2192');
+    btn.onclick = function(){
+      startSession('recommended', recommendedSession(settings().quizSize), 'Recommended Session');
+    };
+    box.appendChild(btn);
+    return box;
+  }
+
+  // A visible chain is harder to break than an invisible one: an unbroken run
+  // you can see reads as something you'd lose, and losses weigh heavier than
+  // equivalent gains (Kahneman & Tversky).
+  function heatmapCard(){
+    var wrap = el('div','heatmap');
+    var grid = el('div','heat-grid');
+    var days = PROGRESS.days || {};
+    var today = new Date();
+    var start = new Date(today); start.setDate(start.getDate() - 83);
+    start.setDate(start.getDate() - start.getDay()); // align columns to weeks
+    var cells = 0, studied = 0;
+    for(var d = new Date(start); d <= today; d.setDate(d.getDate()+1)){
+      var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      var n = days[key] || 0;
+      if(n) studied++;
+      var lvl = n === 0 ? '' : (n < 10 ? ' l1' : (n < 30 ? ' l2' : ' l3'));
+      var cell = el('div','heat-cell'+lvl+(key===todayStr()?' today':''));
+      cell.title = key + ' \u2014 ' + n + ' card' + (n===1?'':'s');
+      grid.appendChild(cell);
+      cells++;
+    }
+    wrap.appendChild(grid);
+    wrap.appendChild(el('div','heat-legend', studied+' of the last '+cells+' days studied \u2014 today is outlined.'));
+    return wrap;
+  }
+
+  function badgeGrid(){
+    var grid = el('div','badge-grid');
+    badgeDefs().forEach(function(b){
+      var card = el('div','badge'+(b.earned?'':' locked'));
+      card.appendChild(el('div','bicon', b.icon));
+      var txt = el('div','');
+      txt.appendChild(el('div','bname', b.name));
+      txt.appendChild(el('div','bdesc', b.desc));
+      card.appendChild(txt);
+      grid.appendChild(card);
+    });
+    return grid;
+  }
+
   function homeView(){
     var wrap = el('div','');
 
+    var st = settings();
+
+    var reminder = reminderBanner();
+    if(reminder) wrap.appendChild(reminder);
+
+    wrap.appendChild(recommendCard());
+
     wrap.appendChild(el('div','section-label','Your Progress'));
     var statGrid = el('div','stat-grid');
+    statGrid.appendChild(statTile(String(dueCount()), 'Due Today'));
     statGrid.appendChild(statTile(overallMastery()+'%', 'Overall Mastery'));
     statGrid.appendChild(statTile(masteredCount()+' / '+ALL_ITEMS.length, 'Cards Mastered'));
-    statGrid.appendChild(statTile(String(PROGRESS.streak.count||0), (PROGRESS.streak.count===1?'Day Streak':'Day Streak')));
+    statGrid.appendChild(statTile(String(PROGRESS.streak.count||0), 'Day Streak'));
     wrap.appendChild(statGrid);
+
+    var done = answeredToday(), goal = st.dailyGoal;
+    var goalRow = el('div','goal-row');
+    goalRow.appendChild(el('span','', done >= goal ? 'Daily goal met' : 'Today'));
+    var goalTrack = el('div','goal-track');
+    var goalFill = el('div','goal-fill'+(done>=goal?' met':''));
+    goalFill.style.width = Math.min(100, goal ? Math.round(100*done/goal) : 0)+'%';
+    goalTrack.appendChild(goalFill);
+    goalRow.appendChild(goalTrack);
+    goalRow.appendChild(el('span','mono', done+' / '+goal+' cards'));
+    wrap.appendChild(goalRow);
 
     if(GOOGLE_CLIENT_ID){
       var syncNote = el('div','sync-note');
@@ -1716,6 +2275,12 @@
     catBars.appendChild(categoryBar('vocab','Vocabulary'));
     wrap.appendChild(catBars);
 
+    wrap.appendChild(el('div','section-label','Study Days'));
+    wrap.appendChild(heatmapCard());
+
+    wrap.appendChild(el('div','section-label','Milestones'));
+    wrap.appendChild(badgeGrid());
+
     wrap.appendChild(recentActivitySection(5));
 
     wrap.appendChild(el('div','section-label','Jump In'));
@@ -1726,7 +2291,9 @@
       {title:'Test', desc:'A longer, harder check — closer to the real exam.', view:'test'},
       {title:'Guided Exercises', desc:'See the rule explained, then practice it.', view:'guided'},
       {title:'Study Methods', desc:'Fill-in-the-blank, multiple choice, matching, and more.', view:'methods'},
-      {title:'History', desc:'Every past session and score, in full.', view:'history'}
+      {title:'History', desc:'Every past session and score, in full.', view:'history'},
+      {title:'Reference Sheets', desc:'Printable tables for when you\'re doing the homework, not quizzing.', view:'reference'},
+      {title:'Settings', desc:'Daily goal, session sizes, reminders, and your data.', view:'settings'}
     ];
     jumpItems.forEach(function(j){
       var card = el('div','global-card');
@@ -1746,7 +2313,7 @@
       var card = el('div','topic-card');
       card.appendChild(el('div','topic-tab cat-'+t.cat));
       var body = el('div','topic-body cat-'+t.cat);
-      body.appendChild(el('div','topic-title', t.name));
+      body.appendChild(el('div','topic-title', '<span class="topic-icon">'+topicIcon(t.id)+'</span><span>'+escapeHtml(t.name)+'</span>'));
       body.appendChild(el('div','topic-blurb', t.blurb));
       var mrow = el('div','mastery-row');
       var track = el('div','mastery-bar');
@@ -1768,7 +2335,7 @@
     var resetBtn = el('button','','Reset Progress');
     resetBtn.onclick = function(){
       if(confirm('Delete all progress saved in this browser?')){
-        PROGRESS = {items:{}, streak:{count:0,last:null}, history:[]};
+        PROGRESS = migrateProgress({items:{}, streak:{count:0,last:null}, history:[], days:{}, settings:PROGRESS.settings||{}});
         saveProgress();
         render();
       }
@@ -1795,7 +2362,7 @@
       var card = el('div','topic-card');
       card.appendChild(el('div','topic-tab cat-'+t.cat));
       var body = el('div','topic-body cat-'+t.cat);
-      body.appendChild(el('div','topic-title', t.name));
+      body.appendChild(el('div','topic-title', '<span class="topic-icon">'+topicIcon(t.id)+'</span><span>'+escapeHtml(t.name)+'</span>'));
       var mrow = el('div','mastery-row');
       var track = el('div','mastery-bar');
       var fill = el('div','mastery-fill'); fill.style.width = mastery+'%';
@@ -1828,22 +2395,58 @@
     return pickerView({
       title:'Quiz',
       description:'A short, interleaved check that mixes grammar and vocabulary together, weighted toward what you\'re close to forgetting. Mixed practice sticks better than drilling one topic in a block.',
-      primaryLabel:'Quiz — All Topics (12 questions)',
-      onPrimary:function(){ startSession('quiz', pickMixedSession(12,false), 'Quiz — All Topics'); },
+      primaryLabel:'Quiz — All Topics ('+settings().quizSize+' questions)',
+      onPrimary:function(){ startSession('quiz', pickMixedSession(settings().quizSize,false), 'Quiz — All Topics'); },
       topicButtonLabel:'Quiz This Topic',
       onTopic:function(tid){ startSession('quiz', pickTopicSession(tid,8), 'Quiz — '+TOPIC_MAP[tid].name); }
     });
   }
 
   function testView(){
-    return pickerView({
+    var view = pickerView({
       title:'Test',
       description:'A longer, more demanding check with more type-it-yourself questions — closer to what an actual exam asks of you.',
-      primaryLabel:'Test — All Topics (30 questions)',
-      onPrimary:function(){ startSession('test', pickMixedSession(30,true), 'Test — All Topics'); },
+      primaryLabel:'Test — All Topics ('+settings().testSize+' questions)',
+      onPrimary:function(){ startSession('test', pickMixedSession(settings().testSize,true), 'Test — All Topics'); },
       topicButtonLabel:'Test This Topic',
       onTopic:function(tid){ startSession('test', pickTopicSession(tid,15), 'Test — '+TOPIC_MAP[tid].name); }
     });
+
+    // Interleaving works across the whole course, not just within one unit —
+    // so the cumulative exam draws on everything and leans on the weakest
+    // topics the Report Card already knows about.
+    var finalCard = el('div','recommend');
+    var fb = el('div','recommend-body');
+    fb.appendChild(el('h3','','Comprehensive Final Exam'));
+    fb.appendChild(el('p','','50 questions across every topic, weighted toward your weakest ones, typed wherever the card allows it. The full-course version of a Test.'));
+    finalCard.appendChild(fb);
+    var fbtn = el('button','btn btn-primary btn-lg','Begin Final →');
+    fbtn.onclick = function(){ startSession('final', pickFinalExam(50), 'Comprehensive Final Exam'); };
+    finalCard.appendChild(fbtn);
+    view.insertBefore ? view.insertBefore(finalCard, view.children[3] || null) : view.appendChild(finalCard);
+    return view;
+  }
+
+  // Half the paper is an even sweep of the whole course; the other half is
+  // pulled from the weakest topics, so the exam spends its questions where
+  // they're most informative.
+  function pickFinalExam(n){
+    var weak = weakestTopics(5);
+    var half = Math.floor(n/2);
+    var out = pickMixedSession(n-half, true);
+    var used = {}; out.forEach(function(it){ used[it.id]=1; });
+    var weakPool = [];
+    weak.forEach(function(tid){ weakPool = weakPool.concat(ITEMS_BY_TOPIC[tid]||[]); });
+    if(!weakPool.length) weakPool = ALL_ITEMS;
+    shuffled(weakPool).forEach(function(it){
+      if(out.length >= n || used[it.id]) return;
+      used[it.id]=1; out.push(it);
+    });
+    shuffled(ALL_ITEMS).forEach(function(it){
+      if(out.length >= n || used[it.id]) return;
+      used[it.id]=1; out.push(it);
+    });
+    return shuffled(out);
   }
 
   function guidedView(){
@@ -1857,7 +2460,7 @@
       var card = el('div','topic-card');
       card.appendChild(el('div','topic-tab cat-'+t.cat));
       var body = el('div','topic-body cat-'+t.cat);
-      body.appendChild(el('div','topic-title', t.name));
+      body.appendChild(el('div','topic-title', '<span class="topic-icon">'+topicIcon(t.id)+'</span><span>'+escapeHtml(t.name)+'</span>'));
       var mrow = el('div','mastery-row');
       var track = el('div','mastery-bar');
       var fill = el('div','mastery-fill'); fill.style.width = mastery+'%';
@@ -1909,14 +2512,48 @@
       body.appendChild(el('div','method-icon', m.icon));
       body.appendChild(el('div','topic-title', m.title));
       body.appendChild(el('div','topic-blurb', m.blurb));
-      var btn = el('button','btn btn-primary btn-block','Choose Topic →');
-      btn.onclick = function(){ go('methodPicker', {methodId:m.id}); };
+      var avail = methodAvailability(m.id);
+      if(avail.note) body.appendChild(el('div','gloss', avail.note));
+      var btn = el('button','btn btn-primary btn-block', avail.ready ? (STANDING_DECKS[m.id] ? 'Start →' : 'Choose Topic →') : 'Not available yet');
+      btn.disabled = !avail.ready;
+      btn.onclick = function(){
+        if(!avail.ready) return;
+        if(STANDING_DECKS[m.id]) startMethod(m.id, null);
+        else go('methodPicker', {methodId:m.id});
+      };
       body.appendChild(btn);
       card.appendChild(body);
       grid.appendChild(card);
     });
     wrap.appendChild(grid);
     return wrap;
+  }
+
+  // Decks that are a filter over everything, so a topic picker in front of
+  // them would mostly show empty topics.
+  var STANDING_DECKS = {missed:1, speed:1};
+
+  function methodAvailability(id){
+    if(id === 'missed'){
+      var n = missedItems().length;
+      return n >= 2 ? {ready:true, note:n+' card'+(n===1?'':'s')+' in the deck right now.'}
+                    : {ready:false, note:'Nothing missed yet — this fills up as you get things wrong.'};
+    }
+    if(id === 'speed'){
+      var m = masteredItems().length;
+      return m >= 5 ? {ready:true, note:m+' mastered card'+(m===1?'':'s')+' eligible.'}
+                    : {ready:false, note:'Unlocks at 5 mastered cards ('+m+' so far) — speed only helps once material is solid.'};
+    }
+    if(id === 'listening'){
+      return speechAvailable()
+        ? {ready:true, note:'Uses your device\'s Spanish voice.'}
+        : {ready:false, note:'This browser has no speech synthesis available.'};
+    }
+    if(id === 'sentence'){
+      var t = sentenceItems().length;
+      return t >= 2 ? {ready:true, note:t+' full-sentence cards available.'} : {ready:false, note:'No full-sentence cards available.'};
+    }
+    return {ready:true, note:''};
   }
 
   function methodPickerView(){
@@ -1943,6 +2580,22 @@
       startSession('mc-drill', pickWeighted(mcCapablePool(pool), topicId?10:15), 'Multiple Choice Drill — '+label, 'mc');
     } else if(methodId === 'matching'){
       startMatching(pickWeighted(pool, 6), 'Matching Pairs — '+label, pool);
+    } else if(methodId === 'missed'){
+      var missed = missedItems().slice(0, 15);
+      if(missed.length < 1) return;
+      startSession('missed', shuffled(missed), 'Missed-Words Deck');
+    } else if(methodId === 'sentence'){
+      var sPool = sentenceItems().filter(function(it){ return !topicId || it.topic === topicId; });
+      if(!sPool.length) return;
+      startSession('sentence', pickWeighted(sPool, Math.min(10, sPool.length)), 'Full-Sentence Drill — '+label, 'typed');
+    } else if(methodId === 'listening'){
+      var lPool = listeningItems().filter(function(it){ return !topicId || it.topic === topicId; });
+      if(!lPool.length) return;
+      startSession('listening', pickWeighted(lPool, Math.min(12, lPool.length)), 'Listening Drill — '+label, 'typed', {listen:true});
+    } else if(methodId === 'speed'){
+      var mPool = masteredItems();
+      if(mPool.length < 2) return;
+      startSession('speed', pickWeighted(mPool, Math.min(20, mPool.length)), 'Timed Speed Round', null, {speedMs:12000});
     }
   }
 
@@ -2097,9 +2750,11 @@
   }
 
   /* ---------- SESSION (quiz/test/guided/drills) ---------- */
-  function startSession(mode, items, label, forceMode){
+  function startSession(mode, items, label, forceMode, opts){
     if(!items.length){ return; }
-    go('session', {sessionMode:mode, sessionLabel:label, sessionItems:items, sessionIdx:0, sessionAnswered:false, sessionResults:[], q:prepQuestion(items[0], forceMode), lastChoice:null, lastTypedVal:'', forceMode:forceMode, hintShown:false, historyLogged:false});
+    opts = opts || {};
+    go('session', {sessionMode:mode, sessionLabel:label, sessionItems:items, sessionIdx:0, sessionAnswered:false, sessionResults:[], q:prepQuestion(items[0], forceMode), lastChoice:null, lastTypedVal:'', forceMode:forceMode, hintShown:false, historyLogged:false,
+      listen: !!opts.listen, speedMs: opts.speedMs || 0, speedDeadline: null});
   }
 
   function sessionView(){
@@ -2127,11 +2782,54 @@
     var topic = TOPIC_MAP[item.topic];
     var card = el('div','session-card');
     card.appendChild(el('div','qchip cat-'+topic.cat, topic.name));
-    card.appendChild(el('div','q-prompt', item.prompt));
+
+    if(state.listen){
+      // The written prompt is withheld on purpose: the whole point is to get
+      // the word in through the ear rather than the eye.
+      card.appendChild(el('div','q-prompt','\ud83c\udfa7 Type what you hear'));
+      var replay = el('button','btn btn-ghost btn-sm','\ud83d\udd0a Play again');
+      replay.onclick = function(){ speak(item.answer[0]); };
+      var replayRow = el('div','hint-row');
+      replayRow.appendChild(replay);
+      card.appendChild(replayRow);
+      if(!state.sessionAnswered) speak(item.answer[0]);
+    } else {
+      card.appendChild(el('div','q-prompt', item.prompt));
+    }
 
     if(!state.q) state.q = prepQuestion(item, state.forceMode);
-    var mode = state.q.mode;
+    var mode = state.listen ? 'typed' : state.q.mode;
     var answered = state.sessionAnswered;
+
+    if(state.speedMs && !answered){
+      if(!state.speedDeadline) state.speedDeadline = Date.now() + state.speedMs;
+      var timerRow = el('div','timer-row');
+      var timerTrack = el('div','timer-track');
+      var timerFill = el('div','timer-fill');
+      timerTrack.appendChild(timerFill);
+      var timerText = el('div','timer-text mono','');
+      timerRow.appendChild(timerTrack);
+      timerRow.appendChild(timerText);
+      card.appendChild(timerRow);
+      var paint = function(){
+        var left = speedRemaining();
+        timerFill.style.width = Math.round(100*left/state.speedMs)+'%';
+        if(left < state.speedMs*0.25) timerFill.classList.add('urgent');
+        timerText.innerHTML = (left/1000).toFixed(1)+'s';
+      };
+      paint();
+      if(typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function'){
+        clearSpeedTimer();
+        speedTimer = setInterval(function(){
+          if(state.view !== 'session' || state.sessionAnswered){ clearSpeedTimer(); return; }
+          paint();
+          if(speedRemaining() <= 0){
+            clearSpeedTimer();
+            if(speedExpire(item)) render();
+          }
+        }, 100);
+      }
+    }
 
     var hintRow = null;
     if(state.sessionMode === 'guided' && !answered){
@@ -2242,7 +2940,7 @@
     nextBtn.onclick = function(){
       var nextIdx = idx+1;
       var nextQ = nextIdx < items.length ? prepQuestion(items[nextIdx], state.forceMode) : null;
-      go('session', {sessionMode:state.sessionMode, sessionLabel:state.sessionLabel, sessionItems:items, sessionIdx:nextIdx, sessionAnswered:false, sessionResults:state.sessionResults, q:nextQ, lastChoice:null, lastTypedVal:'', hintShown:false});
+      go('session', {sessionMode:state.sessionMode, sessionLabel:state.sessionLabel, sessionItems:items, sessionIdx:nextIdx, sessionAnswered:false, sessionResults:state.sessionResults, q:nextQ, lastChoice:null, lastTypedVal:'', hintShown:false, speedDeadline:null});
     };
     footer.appendChild(nextBtn);
     card.appendChild(footer);
@@ -2333,6 +3031,199 @@
     return wrap;
   }
 
+
+  /* ============================= SETTINGS VIEW ============================= */
+  function settingRow(cfg){
+    var card = el('div','setting-card');
+    card.appendChild(el('h3','', cfg.title));
+    card.appendChild(el('p','', cfg.desc));
+    var control = el('div','setting-control');
+    cfg.controls.forEach(function(c){ control.appendChild(c); });
+    card.appendChild(control);
+    if(cfg.why) card.appendChild(el('div','why-note', cfg.why));
+    return card;
+  }
+  function choiceButtons(values, current, onPick, fmt){
+    return values.map(function(v){
+      var b = el('button','filter-btn'+(String(current)===String(v)?' active':''), fmt ? fmt(v) : String(v));
+      b.onclick = function(){ onPick(v); };
+      return b;
+    });
+  }
+
+  function settingsView(){
+    var st = settings();
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title','Settings'));
+    wrap.appendChild(el('p','page-desc','How hard, how long, and how often \u2014 plus what happens to your data. Everything here is saved with your progress and follows you to any signed-in device.'));
+
+    wrap.appendChild(el('div','section-label','Study'));
+
+    wrap.appendChild(settingRow({
+      title:'Daily goal',
+      desc:'How many cards you aim to answer each day. Shown as a bar on Home.',
+      controls: choiceButtons([10,20,30,50,80], st.dailyGoal, function(v){ setSetting('dailyGoal', v); render(); }, function(v){ return v+' cards'; }),
+      why:'A specific, moderately hard target beats \u201cstudy more\u201d \u2014 one of the most replicated findings in applied psychology (Locke & Latham).'
+    }));
+
+    wrap.appendChild(settingRow({
+      title:'Quiz length',
+      desc:'Questions in an all-topics Quiz.',
+      controls: choiceButtons([8,12,20,30], st.quizSize, function(v){ setSetting('quizSize', v); render(); })
+    }));
+
+    wrap.appendChild(settingRow({
+      title:'Test length',
+      desc:'Questions in an all-topics Test.',
+      controls: choiceButtons([20,30,45,60], st.testSize, function(v){ setSetting('testSize', v); render(); })
+    }));
+
+    wrap.appendChild(settingRow({
+      title:'When cards switch to typing',
+      desc:'Cards start as multiple choice and become type-it-yourself once you\'ve got them right this many times in a row.',
+      controls: choiceButtons([1,2,3,4], st.typedFrom, function(v){ setSetting('typedFrom', v); render(); }, function(v){ return v+' correct'; }),
+      why:'Producing an answer is harder and sticks better than picking one; moving the threshold lets you tune that difficulty to where it is useful rather than discouraging (Bjork).'
+    }));
+
+    wrap.appendChild(el('div','section-label','Reminder'));
+    var timeInput = el('input','setting-input');
+    timeInput.type = 'time';
+    timeInput.value = st.reminderTime || '';
+    timeInput.onchange = function(){ setSetting('reminderTime', timeInput.value); render(); };
+    var clearTime = el('button','btn btn-ghost btn-sm','Clear');
+    clearTime.onclick = function(){ setSetting('reminderTime',''); render(); };
+    wrap.appendChild(settingRow({
+      title:'Study time',
+      desc:'Set a time and Home will nudge you if the day\'s goal is still unmet when you open the app after it. This is an in-app reminder only \u2014 it cannot notify you with the tab closed.',
+      controls:[timeInput, clearTime],
+      why:'Naming when you will do something (\u201cI study at 7pm\u201d) raises follow-through well above simply intending to do it (Gollwitzer).'
+    }));
+
+    wrap.appendChild(el('div','section-label','Display'));
+    wrap.appendChild(settingRow({
+      title:'Theme',
+      desc:'Follow your device, or force one.',
+      controls: choiceButtons(['system','light','dark'], st.theme, function(v){ setSetting('theme', v); applyDisplaySettings(); render(); },
+        function(v){ return v.charAt(0).toUpperCase()+v.slice(1); })
+    }));
+    wrap.appendChild(settingRow({
+      title:'Text size',
+      desc:'Scales the whole interface.',
+      controls: choiceButtons([90,100,115,130], st.textScale, function(v){ setSetting('textScale', v); applyDisplaySettings(); render(); }, function(v){ return v+'%'; }),
+      why:'Effort spent squinting at the interface is effort not spent on the Spanish (cognitive load theory, Sweller).'
+    }));
+
+    wrap.appendChild(el('div','section-label','Your Data'));
+    var syncState = !GOOGLE_CLIENT_ID
+      ? 'Sign-in is not configured on this server, so progress stays in this browser only.'
+      : (AUTH.user
+        ? 'Signed in as '+AUTH.user.email+'. Synced: card progress, session history, study days, streak, and these settings.'
+        : 'Signed out \u2014 progress is saved in this browser only. Sign in (top right) to sync it to your account.');
+    wrap.appendChild(el('div','sync-note', escapeHtml(syncState)));
+
+    var expJson = el('button','btn btn-sm','Export JSON');
+    expJson.onclick = exportJSON;
+    var expCsv = el('button','btn btn-sm','Export sessions (CSV)');
+    expCsv.onclick = exportCSV;
+    wrap.appendChild(settingRow({
+      title:'Export your progress',
+      desc:'A full JSON copy of everything, or a spreadsheet of your sessions.',
+      controls:[expJson, expCsv],
+      why:'It is your record of your own work; you should be able to take it with you.'
+    }));
+
+    var clearBtn = el('button','btn btn-sm','Clear local data');
+    clearBtn.onclick = function(){
+      if(confirm('Delete all progress stored in this browser? If you are signed in, the copy on your account is not touched \u2014 signing in again will pull it back.')){
+        PROGRESS = migrateProgress({items:{}, streak:{count:0,last:null}, history:[], days:{}, settings:PROGRESS.settings||{}});
+        try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
+        render();
+      }
+    };
+    var signOutBtn = el('button','btn btn-sm','Sign out');
+    signOutBtn.disabled = !AUTH.user;
+    signOutBtn.onclick = function(){ signOut(); };
+    wrap.appendChild(settingRow({
+      title:'Account controls',
+      desc:'Clearing local data leaves any synced copy on your account alone.',
+      controls:[signOutBtn, clearBtn]
+    }));
+
+    return wrap;
+  }
+
+  /* ============================= REFERENCE SHEETS =============================
+     A static cheat-sheet built from the same card data, for the moments when
+     you're doing homework rather than testing yourself: a worked reference
+     removes the guesswork a blank page would demand (Sweller). */
+  function referenceView(){
+    var wrap = el('div','');
+    wrap.appendChild(el('h2','page-title','Reference Sheets'));
+    wrap.appendChild(el('p','page-desc','Every topic as a plain table you can read or print \u2014 no quizzing, no scoring. For when you just need the forms in front of you.'));
+    var grid = el('div','dash-grid');
+    TOPICS.forEach(function(t){
+      var card = el('div','topic-card');
+      card.appendChild(el('div','topic-tab cat-'+t.cat));
+      var body = el('div','topic-body cat-'+t.cat);
+      body.appendChild(el('div','topic-title', '<span class="topic-icon">'+topicIcon(t.id)+'</span><span>'+escapeHtml(t.name)+'</span>'));
+      body.appendChild(el('div','topic-blurb', t.blurb));
+      var btn = el('button','btn btn-sm btn-block','Open sheet');
+      btn.onclick = function(){ go('referenceSheet', {topicId:t.id}); };
+      body.appendChild(btn);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  // Deduped prompt/answer pairs for one topic, drawn straight from the cards.
+  function referenceRows(topicId){
+    var seen = {}, rows = [];
+    (ITEMS_BY_TOPIC[topicId]||[]).forEach(function(it){
+      var q = stripHtml(it.prompt).replace(/\s+/g,' ').trim();
+      var a = it.answer.join(' / ');
+      var key = q+'\u241f'+a;
+      if(seen[key]) return;
+      seen[key] = 1;
+      rows.push({q:q, a:a, note:it.note||''});
+    });
+    return rows;
+  }
+
+  function referenceSheetView(){
+    var t = TOPIC_MAP[state.topicId];
+    var rule = RULES[t.id] || {title:t.name, explanation:t.blurb};
+    var wrap = el('div','');
+    var back = el('button','back-btn','\u2190 Back to Reference Sheets');
+    back.onclick = function(){ go('reference'); };
+    wrap.appendChild(back);
+
+    var sec = el('div','ref-section');
+    sec.appendChild(el('h3','', topicIcon(t.id)+' '+escapeHtml(rule.title || t.name)));
+    sec.appendChild(el('p','rule-text', rule.explanation));
+    if(rule.example){
+      var ex = el('div','rule-example');
+      ex.innerHTML = '<div class="rule-example-es">'+escapeHtml(rule.example.es)+'</div><div class="gloss">'+escapeHtml(rule.example.en)+'</div>';
+      sec.appendChild(ex);
+    }
+    var rows = referenceRows(t.id);
+    var table = el('table','ref-table');
+    var html = '<thead><tr><th>Prompt</th><th>Answer</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      html += '<tr><td>'+escapeHtml(r.q)+'</td><td>'+escapeHtml(r.a)+(r.note?('<br><span class="gloss">'+escapeHtml(r.note)+'</span>'):'')+'</td></tr>';
+    });
+    table.innerHTML = html + '</tbody>';
+    sec.appendChild(table);
+    wrap.appendChild(sec);
+
+    var printBtn = el('button','btn btn-primary','\ud83d\udda8 Print this sheet');
+    printBtn.onclick = function(){ if(typeof window !== 'undefined' && window.print) window.print(); };
+    wrap.appendChild(printBtn);
+    return wrap;
+  }
+
+  applyDisplaySettings();
   render();
   initAuth();
 })();
