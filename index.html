@@ -223,7 +223,14 @@
     text-align:left; padding:12px 14px; border-radius:9px; border:1px solid var(--rule); background:var(--surface-2);
     font-size:.92rem; cursor:pointer; color:var(--ink);
   }
+  .choice-btn{display:flex; align-items:center; gap:10px;}
   .choice-btn:hover{border-color:var(--accent-navy);}
+  .choice-key{
+    flex-shrink:0; width:20px; height:20px; border-radius:5px; background:var(--surface);
+    border:1px solid var(--rule); font-size:.7rem; color:var(--ink-soft);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  @media (hover:none){ .choice-key{display:none;} }
   .choice-btn.correct{background:color-mix(in srgb, var(--accent-pine) 22%, var(--surface)); border-color:var(--accent-pine);}
   .choice-btn.incorrect{background:color-mix(in srgb, var(--accent-red) 20%, var(--surface)); border-color:var(--accent-red);}
   .choice-btn:disabled{cursor:default;}
@@ -1227,9 +1234,27 @@
     return a;
   }
   function sample(arr, n){ return shuffled(arr).slice(0, n); }
+  // Loose: ignores case, accents, ñ, and punctuation.
   function normalize(s){
     return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
       .replace(/[¿?¡!.,]/g,'').replace(/\s+/g,' ').trim();
+  }
+  // Strict: keeps accents and ñ, so á ≠ a and año ≠ ano.
+  function normalizeStrict(s){
+    return String(s).toLowerCase().normalize('NFC')
+      .replace(/[¿?¡!.,]/g,'').replace(/\s+/g,' ').trim();
+  }
+  // Three outcomes, not two. An answer that is right apart from its accents
+  // was previously marked simply "Correct", so the accent was never learned;
+  // now it is still counted correct (the recall succeeded) but the feedback
+  // names the exact fix, which is the level of specificity that actually
+  // changes behaviour rather than just scoring it.
+  function gradeAnswer(item, val){
+    var loose = item.answer.some(function(a){ return normalize(a) === normalize(val); });
+    if(!loose) return 'wrong';
+    var exact = item.answer.some(function(a){ return normalizeStrict(a) === normalizeStrict(val); });
+    if(exact) return 'exact';
+    return settings().strictAccents ? 'wrong' : 'accent';
   }
   function todayStr(){
     var d = new Date();
@@ -1275,7 +1300,7 @@
 
   var DEFAULT_SETTINGS = {
     dailyGoal:30, quizSize:12, testSize:30, typedFrom:2,
-    reminderTime:'', theme:'system', textScale:100
+    reminderTime:'', theme:'system', textScale:100, strictAccents:false
   };
   function settings(){
     var out = {};
@@ -1324,17 +1349,24 @@
     apiFetch('/api/progress', {method:'PUT', body: JSON.stringify(PROGRESS)}).catch(function(){});
   }
 
+  // Signing in used to hand the server's copy straight over the local one,
+  // so anything practised while signed out on this device was destroyed.
+  // Now the local copy is posted first and the server reconciles the two;
+  // whatever comes back is the union of both.
   function pullProgress(){
-    return apiFetch('/api/progress').then(function(res){
+    return apiFetch('/api/progress', {method:'PUT', body: JSON.stringify(PROGRESS)}).then(function(res){
       if(res.ok && res.data.progress){
-        PROGRESS = res.data.progress;
-        if(!PROGRESS.history) PROGRESS.history = [];
+        PROGRESS = migrateProgress(res.data.progress);
       }
-      // Caches locally either way; if the account had no saved progress yet,
-      // this also uploads whatever was practiced on this device so it isn't lost.
-      saveProgress();
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
       render();
     }).catch(function(){});
+  }
+
+  // Deliberate wipes are the one case a merge must not undo.
+  function replaceProgressOnServer(){
+    if(!AUTH.user) return;
+    apiFetch('/api/progress?mode=replace', {method:'PUT', body: JSON.stringify(PROGRESS)}).catch(function(){});
   }
 
   function handleGoogleCredential(response){
@@ -1604,6 +1636,46 @@
   // The one composite number: weighted toward long-term retention (mastery)
   // over raw hit rate (accuracy), with a coverage term so untouched material
   // pulls the grade down rather than being silently ignored.
+  // The review schedule is otherwise invisible until the day a card is
+  // already due. Showing the next week of it turns an abstract forgetting
+  // curve into something that can be planned around.
+  function dueForecast(days){
+    var out = [];
+    for(var i=0; i<days; i++){
+      var key = daysFromToday(i);
+      var n = ALL_ITEMS.filter(function(it){
+        var p = getProg(it.id);
+        if(!p) return false;
+        return i === 0 ? p.due <= key : p.due === key;
+      }).length;
+      out.push({date:key, count:n, offset:i});
+    }
+    return out;
+  }
+
+  function forecastSection(){
+    var wrap = el('div','');
+    var fc = dueForecast(7);
+    var max = fc.reduce(function(m,d){ return Math.max(m, d.count); }, 0);
+    var list = el('div','breakdown-list');
+    var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    fc.forEach(function(d){
+      var when = d.offset === 0 ? 'Today' : (d.offset === 1 ? 'Tomorrow'
+        : dayNames[new Date(d.date + 'T12:00:00').getDay()] + ' ' + d.date.slice(5));
+      var row = el('div','breakdown-row');
+      row.appendChild(el('div','breakdown-name', when));
+      var track = el('div','breakdown-track');
+      var fill = el('div','breakdown-fill'+(d.offset===0?' ok':''));
+      fill.style.width = (max ? Math.round(100*d.count/max) : 0)+'%';
+      track.appendChild(fill);
+      row.appendChild(track);
+      row.appendChild(el('div','breakdown-num mono', String(d.count)));
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+    return wrap;
+  }
+
   function compositeGrade(){
     var mastery = overallMastery(), accuracy = lifetimeAccuracy(), coverage = coveragePct();
     var score = Math.round(mastery*0.4 + accuracy*0.35 + coverage*0.25);
@@ -2104,6 +2176,10 @@
       wrap.appendChild(el('div','trend-note '+dir, arrow+' '+msg));
     }
 
+    wrap.appendChild(el('div','section-label','Coming Due \u2014 Next 7 Days'));
+    wrap.appendChild(el('p','page-desc','Cards the schedule will bring back on each day. Spikes are worth planning around; an empty stretch is the schedule working, not a gap.'));
+    wrap.appendChild(forecastSection());
+
     wrap.appendChild(el('div','section-label','Accuracy by Category'));
     var catList = el('div','breakdown-list');
     [['grammar','Grammar'],['verbs','Verbs'],['vocab','Vocabulary']].forEach(function(c){
@@ -2334,9 +2410,13 @@
     var footer = el('div','footer-links');
     var resetBtn = el('button','','Reset Progress');
     resetBtn.onclick = function(){
-      if(confirm('Delete all progress saved in this browser?')){
+      var msg = AUTH.user
+        ? 'Delete all progress, including the copy saved to '+AUTH.user.email+'? This cannot be undone.'
+        : 'Delete all progress saved in this browser?';
+      if(confirm(msg)){
         PROGRESS = migrateProgress({items:{}, streak:{count:0,last:null}, history:[], days:{}, settings:PROGRESS.settings||{}});
-        saveProgress();
+        try{ localStorage.setItem(STORE_KEY, JSON.stringify(PROGRESS)); }catch(e){}
+        replaceProgressOnServer();
         render();
       }
     };
@@ -2860,8 +2940,8 @@
       var choicesWrap = el('div','choices');
       var opts = state.q.opts;
       var choiceButtons = [];
-      opts.forEach(function(opt){
-        var b = el('button','choice-btn', escapeHtml(opt));
+      opts.forEach(function(opt, oi){
+        var b = el('button','choice-btn', '<span class="choice-key mono">'+(oi+1)+'</span>'+escapeHtml(opt));
         b.disabled = !!answered;
         if(answered){
           if(normalize(opt) === normalize(item.answer[0])) b.classList.add('correct');
@@ -2897,9 +2977,9 @@
       function doSubmit(){
         if(state.sessionAnswered) return;
         var val = input.value;
-        var correct = item.answer.some(function(a){ return normalize(a) === normalize(val); });
+        var grade = gradeAnswer(item, val);
         state.lastTypedVal = val;
-        submitAnswer(item, val, correct);
+        submitAnswer(item, val, grade !== 'wrong', grade);
         input.disabled = true;
         submitBtn.disabled = true;
         afterAnswer();
@@ -2923,9 +3003,13 @@
   function appendFeedback(card, item, mode, idx, items){
     var last = state.sessionResults[state.sessionResults.length-1];
     var fb = el('div','feedback '+(last.correct?'correct':'incorrect'));
-    var mark = el('span','fmark', last.correct?'✓':'✕');
+    if(fb.setAttribute){ fb.setAttribute('role','status'); fb.setAttribute('aria-live','polite'); }
+    var mark = el('span','fmark', last.grade==='accent' ? '✓' : (last.correct?'✓':'✕'));
     var body = el('div','');
-    if(last.correct){
+    if(last.grade === 'accent'){
+      body.innerHTML = '<b>Correct — mind the accent:</b> '+escapeHtml(item.answer[0])
+        + (item.note?('<br>'+escapeHtml(item.note)):'');
+    } else if(last.correct){
       body.innerHTML = '<b>Correct!</b>' + (item.note?(' — '+escapeHtml(item.note)):'');
     } else {
       var youWrote = (mode === 'typed' && last.userVal) ? ('Your answer: <b>'+escapeHtml(last.userVal)+'</b><br>') : '';
@@ -2946,10 +3030,10 @@
     card.appendChild(footer);
   }
 
-  function submitAnswer(item, userVal, correct){
+  function submitAnswer(item, userVal, correct, grade){
     recordAnswer(item.id, correct);
     state.sessionAnswered = true;
-    state.sessionResults.push({item:item, userVal:userVal, correct:correct});
+    state.sessionResults.push({item:item, userVal:userVal, correct:correct, grade:grade || (correct?'exact':'wrong')});
   }
 
   /* ---------- RESULTS ---------- */
@@ -3083,6 +3167,14 @@
       desc:'Cards start as multiple choice and become type-it-yourself once you\'ve got them right this many times in a row.',
       controls: choiceButtons([1,2,3,4], st.typedFrom, function(v){ setSetting('typedFrom', v); render(); }, function(v){ return v+' correct'; }),
       why:'Producing an answer is harder and sticks better than picking one; moving the threshold lets you tune that difficulty to where it is useful rather than discouraging (Bjork).'
+    }));
+
+    wrap.appendChild(settingRow({
+      title:'Accents',
+      desc:'Lenient counts a right answer with a missing accent as correct and shows you the accented form. Strict marks it wrong.',
+      controls: choiceButtons([false,true], st.strictAccents, function(v){ setSetting('strictAccents', v); render(); },
+        function(v){ return v ? 'Strict' : 'Lenient'; }),
+      why:'Either way you are told exactly what was off \u2014 specific corrective feedback is what changes the next attempt. Strict adds real difficulty, which helps once the words themselves are solid and mostly discourages before that.'
     }));
 
     wrap.appendChild(el('div','section-label','Reminder'));
@@ -3223,8 +3315,34 @@
     return wrap;
   }
 
+  /* ---------- keyboard ----------
+     A drill is a repetitive loop, and reaching for a pointer on every
+     iteration is load spent on the interface rather than the Spanish.
+     Number keys pick an option, Enter advances. */
+  function initKeyboard(){
+    if(typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
+    document.addEventListener('keydown', function(ev){
+      if(state.view !== 'session') return;
+      var tag = ev.target && ev.target.tagName;
+      if(tag === 'INPUT' || tag === 'TEXTAREA'){
+        return; // the text field has its own Enter handler
+      }
+      if(ev.key === 'Enter' || ev.key === ' '){
+        var next = document.querySelector('.session-footer .btn');
+        if(next){ ev.preventDefault(); next.click(); }
+        return;
+      }
+      if(state.sessionAnswered) return;
+      var n = parseInt(ev.key, 10);
+      if(!n || n < 1 || n > 4) return;
+      var buttons = document.querySelectorAll('.choice-btn');
+      if(buttons && buttons[n-1]){ ev.preventDefault(); buttons[n-1].click(); }
+    });
+  }
+
   applyDisplaySettings();
   render();
+  initKeyboard();
   initAuth();
 })();
 </script>

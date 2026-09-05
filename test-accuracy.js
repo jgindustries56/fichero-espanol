@@ -2,7 +2,7 @@ const fs = require('fs');
 const html = fs.readFileSync(__dirname + '/index.html', 'utf8');
 const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 const scriptBody = blocks.find(b => b.includes('(function(){'));
-let code = scriptBody.replace('render();\n  initAuth();\n})();', `
+let code = scriptBody.replace(/\n  render\(\);[\s\S]*?\n\}\)\(\);\s*$/, `
 window.__T__={VERBS:VERBS,REFLEXIVE_VERBS:REFLEXIVE_VERBS,GUSTAR_VERBS:GUSTAR_VERBS,SER_FORMS:SER_FORMS,ESTAR_FORMS:ESTAR_FORMS,TENER_IDIOMS:TENER_IDIOMS,INDEF_WORDS:INDEF_WORDS,PRONOUNS:PRONOUNS,SER_ESTAR_ITEMS:SER_ESTAR_ITEMS,PERO_SINO_ITEMS:PERO_SINO_ITEMS,INDEF_TRANSFORM_ITEMS:INDEF_TRANSFORM_ITEMS,INDEF_PERSONAL_A_ITEMS:INDEF_PERSONAL_A_ITEMS,FUTURE_PLAN_ITEMS:FUTURE_PLAN_ITEMS};
 })();`);
 if (!code.includes('window.__T__')) throw new Error('hook injection mismatch');

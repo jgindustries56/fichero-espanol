@@ -7,8 +7,12 @@ const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]
 const scriptBody = blocks.find(b => b.includes('(function(){'));
 if (!scriptBody) throw new Error('could not locate the main app <script> block');
 let code = scriptBody;
-code = code.replace('render();\n  initAuth();\n})();', `
-window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,answeredToday:answeredToday,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable};
+// Matches the app's closing sequence (render + whatever init calls exist) by
+// shape rather than by an exact string, so adding an init call to index.html
+// doesn't silently break every test in this file.
+const APP_TAIL = /\n  render\(\);[\s\S]*?\n\}\)\(\);\s*$/;
+code = code.replace(APP_TAIL, `
+window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,answeredToday:answeredToday,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable,gradeAnswer:gradeAnswer,normalizeStrict:normalizeStrict,dueForecast:dueForecast,forecastSection:forecastSection,pullProgress:pullProgress,STORE_KEY:STORE_KEY};
 window.__fetchCalls__ = () => fetchCalls;
 window.__clearFetchCalls__ = () => { fetchCalls.length = 0; };
 render();
@@ -647,6 +651,102 @@ check('no new Spanish was introduced by this upgrade', ()=>{
   // new language content. 909 items was the count before the upgrade.
   if(T.ALL_ITEMS.length !== 909) throw new Error('item count changed to '+T.ALL_ITEMS.length+' — content must not be added without the owner asking');
   if(T.TOPICS.length !== 20) throw new Error('topic count changed to '+T.TOPICS.length);
+});
+
+
+/* ---------- upgrade pass: accents, keyboard, schedule visibility ---------- */
+
+check('an answer that is right apart from its accents is correct, and says so', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const item = T.ALL_ITEMS.find(it => /[áéíóúñ]/.test(it.answer[0]));
+  if(!item) throw new Error('no accented answer in the deck to test against');
+  const plain = item.answer[0].normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(T.gradeAnswer(item, item.answer[0]) !== 'exact') throw new Error('the exact answer should grade exact');
+  if(T.gradeAnswer(item, plain) !== 'accent') throw new Error('a missing accent should grade as accent, got '+T.gradeAnswer(item, plain));
+  if(T.gradeAnswer(item, 'zzzz') !== 'wrong') throw new Error('nonsense should grade wrong');
+});
+
+check('strict accents turns a near miss into a miss, lenient does not', ()=>{
+  const item = T.ALL_ITEMS.find(it => /[áéíóúñ]/.test(it.answer[0]));
+  const plain = item.answer[0].normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  T.setSetting('strictAccents', true);
+  if(T.gradeAnswer(item, plain) !== 'wrong') throw new Error('strict mode should reject a missing accent');
+  if(T.gradeAnswer(item, item.answer[0]) !== 'exact') throw new Error('strict mode must still accept the exact answer');
+  T.setSetting('strictAccents', false);
+  if(T.gradeAnswer(item, plain) !== 'accent') throw new Error('lenient mode should accept it again');
+});
+
+check('ñ is treated as its own letter by the strict comparison', ()=>{
+  if(T.normalizeStrict('año') === T.normalizeStrict('ano')) throw new Error('strict compare must distinguish ñ from n');
+  if(T.normalizeStrict('AÑO ') !== T.normalizeStrict('año')) throw new Error('strict compare should still ignore case and padding');
+});
+
+check('an accent slip still advances the card rather than punishing it', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const item = T.ALL_ITEMS.find(it => /[áéíóúñ]/.test(it.answer[0]));
+  const plain = item.answer[0].normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  T.startSession('typed-drill', [item], 'probe', 'typed');
+  const tree = T.sessionView();
+  const input = findAll(tree, n => n.tagName === 'input')[0];
+  const checkBtn = findAll(tree, n => n.tagName === 'button' && n.innerHTML === 'Check')[0];
+  input.value = plain;
+  checkBtn.onclick();
+  const res = T.state.sessionResults[0];
+  if(!res.correct || res.grade !== 'accent') throw new Error('expected a correct/accent result, got '+JSON.stringify({c:res.correct,g:res.grade}));
+  if(T.getProgress().items[item.id].box !== 0) throw new Error('an accent slip should still count as a correct first rep');
+  const fb = findAll(tree, n => hasClass(n,'feedback'))[0];
+  if(!fb) throw new Error('no feedback rendered');
+  const body = findAll(fb, n => /mind the accent/i.test(n.innerHTML||''));
+  if(!body.length) throw new Error('feedback should name the accent explicitly');
+});
+
+check('multiple-choice options are numbered for the keyboard shortcut', ()=>{
+  const mcItem = T.ALL_ITEMS.find(it => !!(it.choices || it.pool));
+  T.startSession('mc-drill', [mcItem], 'probe', 'mc');
+  const buttons = findAll(T.sessionView(), n => hasClass(n,'choice-btn'));
+  buttons.forEach((b,i) => {
+    if(b.innerHTML.indexOf('>'+(i+1)+'<') === -1) throw new Error('choice '+(i+1)+' is not labelled with its key');
+  });
+});
+
+check('the 7-day forecast counts what the schedule will actually surface', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  const fc0 = T.dueForecast(7);
+  if(fc0.length !== 7) throw new Error('expected 7 days, got '+fc0.length);
+  if(fc0.reduce((s,d)=>s+d.count,0) !== 0) throw new Error('an untouched deck has nothing scheduled');
+  // One wrong answer is due today; three correct in a row pushes a card to box
+  // 2, whose interval is 3 days.
+  const a = T.ALL_ITEMS[0], b = T.ALL_ITEMS[1];
+  T.recordAnswer(a.id, false);
+  for(let i=0;i<3;i++) T.recordAnswer(b.id, true);
+  const fc = T.dueForecast(7);
+  if(fc[0].count !== 1) throw new Error('the missed card should be due today, got '+fc[0].count);
+  if(fc[3].count !== 1) throw new Error('the box-2 card should land 3 days out, got '+fc[3].count);
+  if(fc[4].count !== 0) throw new Error('nothing else should be scheduled that week');
+  findAll(T.forecastSection(), n => hasClass(n,'breakdown-row')).length === 7 || (()=>{throw new Error('forecast should render one row per day');})();
+});
+
+check('report card renders the forecast alongside everything else', ()=>{
+  driveByClicking(T.pickTopicSession('regular-verbs',4), 'quiz', 'Quiz — Regular Verbs');
+  T.go('grades');
+  const tree = T.gradesView();
+  const labels = findAll(tree, n => hasClass(n,'section-label')).map(n => n.innerHTML);
+  if(!labels.some(l => /Coming Due/.test(l))) throw new Error('no Coming Due section on the report card');
+});
+
+check('signing in posts the local copy for merging instead of overwriting it', ()=>{
+  T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
+  T.recordAnswer(T.ALL_ITEMS[2].id, true);
+  T.AUTH.user = {sub:'s', email:'e@example.com', name:'E'};
+  window.__clearFetchCalls__();
+  T.pullProgress();
+  const calls = window.__fetchCalls__().filter(c => String(c.url).indexOf('/api/progress') === 0);
+  if(!calls.length) throw new Error('pull should talk to /api/progress');
+  const put = calls.find(c => c.opts && c.opts.method === 'PUT');
+  if(!put) throw new Error('pull must PUT the local copy so the server can reconcile it');
+  const sent = JSON.parse(put.opts.body);
+  if(!sent.items[T.ALL_ITEMS[2].id]) throw new Error('the local card practised while signed out was not sent up');
+  T.AUTH.user = null;
 });
 
 // Run matching flows strictly one after another — they mutate the same

@@ -52,7 +52,39 @@ function clearSessionCookie(res) {
    Sessions live only for the process lifetime — a restart just signs everyone
    out (they sign back in with one click). The durable thing is progress on
    disk, keyed by Google's stable "sub" id, not the session itself. */
-const sessions = new Map(); // sessionId -> {sub, email, name, picture}
+const sessions = new Map(); // sessionId -> {sub, email, name, picture, lastSeen}
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 180; // matches the cookie's Max-Age
+// The Map is never emptied by anything else, so a long-lived container would
+// otherwise accumulate one entry per sign-in for the life of the process.
+function sweepSessions(now) {
+  now = now || Date.now();
+  for (const [id, s] of sessions) {
+    if (now - (s.lastSeen || 0) > SESSION_TTL_MS) sessions.delete(id);
+  }
+}
+function touchSession(id) {
+  const s = sessions.get(id);
+  if (!s) return null;
+  if (Date.now() - (s.lastSeen || 0) > SESSION_TTL_MS) { sessions.delete(id); return null; }
+  s.lastSeen = Date.now();
+  return s;
+}
+
+/* ============================= auth rate limiting =============================
+   Verification is cheap but not free, and the endpoint is unauthenticated by
+   definition. A small per-IP bucket keeps a stranger from using it as a
+   crypto-work amplifier without ever getting in the way of a real person. */
+const AUTH_WINDOW_MS = 10 * 60 * 1000;
+const AUTH_MAX_ATTEMPTS = 20;
+const authAttempts = new Map(); // ip -> [timestamps]
+function authRateLimited(ip, now) {
+  now = now || Date.now();
+  const hits = (authAttempts.get(ip) || []).filter(t => now - t < AUTH_WINDOW_MS);
+  hits.push(now);
+  authAttempts.set(ip, hits);
+  if (authAttempts.size > 5000) authAttempts.clear();
+  return hits.length > AUTH_MAX_ATTEMPTS;
+}
 
 /* ============================= Google ID token verification =============================
    Verified locally against Google's published RS256 keys (no dependency) —
@@ -190,6 +222,61 @@ async function mirrorSessionToSheet(user, entry) {
   }
 }
 
+/* ============================= progress merge =============================
+   Sync used to be last-write-wins, which quietly destroyed work: practise on
+   a signed-out phone, sign in, and the server's copy replaced it. Progress is
+   monotonic (a card's `seen` count only ever grows), so the two copies can be
+   reconciled instead of one winning. This is the single implementation —
+   the client posts its local copy and adopts whatever comes back merged. */
+function pickItem(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  const seenA = a.seen || 0, seenB = b.seen || 0;
+  if (seenA !== seenB) return seenA > seenB ? a : b;
+  const boxA = a.box === undefined ? -1 : a.box, boxB = b.box === undefined ? -1 : b.box;
+  if (boxA !== boxB) return boxA > boxB ? a : b;
+  return (a.due || '') >= (b.due || '') ? a : b;
+}
+function mergeProgress(base, incoming) {
+  if (!base) return incoming;
+  if (!incoming) return base;
+  // Unknown//future top-level keys follow the incoming copy; the fields below
+  // are then reconciled explicitly.
+  const out = Object.assign({}, base, incoming);
+
+  const items = Object.assign({}, base.items || {});
+  Object.keys(incoming.items || {}).forEach(id => { items[id] = pickItem(items[id], incoming.items[id]); });
+  if (base.items || incoming.items) out.items = items;
+
+  if (base.history || incoming.history) {
+    const seen = new Set();
+    const all = [].concat(base.history || [], incoming.history || []).filter(h => {
+      const key = [h.ts, h.date, h.mode, h.label, h.correct, h.total].join('|');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    all.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    out.history = all.slice(-50);
+  }
+
+  if (base.days || incoming.days) {
+    const days = Object.assign({}, base.days || {});
+    Object.keys(incoming.days || {}).forEach(d => {
+      days[d] = Math.max(days[d] || 0, incoming.days[d] || 0);
+    });
+    out.days = days;
+  }
+
+  const bs = base.streak, is = incoming.streak;
+  if (bs && is) {
+    out.streak = (is.count || 0) > (bs.count || 0) ? is
+      : ((bs.count || 0) > (is.count || 0) ? bs : ((is.last || '') >= (bs.last || '') ? is : bs));
+  }
+
+  return out;
+}
+
 function progressPath(sub) {
   const safe = String(sub).replace(/[^a-zA-Z0-9_-]/g, '');
   if (!safe) throw new Error('bad subject id');
@@ -198,7 +285,7 @@ function progressPath(sub) {
 
 function requireAuth(req, res, next) {
   const cookies = parseCookies(req);
-  const session = cookies.fichero_session && sessions.get(cookies.fichero_session);
+  const session = cookies.fichero_session && touchSession(cookies.fichero_session);
   if (!session) return res.status(401).json({ error: 'not signed in' });
   req.user = session;
   next();
@@ -215,11 +302,15 @@ app.get('/', (req, res) => {
 app.post('/api/auth/google', async (req, res) => {
   try {
     if (!GOOGLE_CLIENT_ID) return res.status(500).json({ error: 'Google sign-in is not configured on this server yet.' });
+    if (authRateLimited(req.ip || (req.socket && req.socket.remoteAddress) || 'unknown')) {
+      return res.status(429).json({ error: 'too many sign-in attempts \u2014 try again in a few minutes' });
+    }
     const credential = req.body && req.body.credential;
     if (!credential) return res.status(400).json({ error: 'missing credential' });
     const payload = await verifyGoogleIdToken(credential);
     const sessionId = crypto.randomUUID();
-    const user = { sub: payload.sub, email: payload.email, name: payload.name || payload.email, picture: payload.picture || '' };
+    const user = { sub: payload.sub, email: payload.email, name: payload.name || payload.email, picture: payload.picture || '', lastSeen: Date.now() };
+    sweepSessions();
     sessions.set(sessionId, user);
     setSessionCookie(res, sessionId);
     res.json({ user });
@@ -237,7 +328,7 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/me', (req, res) => {
   const cookies = parseCookies(req);
-  const session = cookies.fichero_session && sessions.get(cookies.fichero_session);
+  const session = cookies.fichero_session && touchSession(cookies.fichero_session);
   res.json({ user: session || null, googleConfigured: !!GOOGLE_CLIENT_ID });
 });
 
@@ -256,9 +347,25 @@ app.put('/api/progress', requireAuth, (req, res) => {
   if (!progress || typeof progress !== 'object' || Array.isArray(progress)) {
     return res.status(400).json({ error: 'bad progress payload' });
   }
-  fs.writeFileSync(progressPath(req.user.sub), JSON.stringify(progress));
-  res.json({ ok: true });
+  const file = progressPath(req.user.sub);
+  // `mode=replace` is for one case only: the user deliberately wiping their
+  // progress, which a merge would otherwise undo by handing the old copy back.
+  let merged = progress;
+  if (req.query.mode !== 'replace' && fs.existsSync(file)) {
+    try { merged = mergeProgress(JSON.parse(fs.readFileSync(file, 'utf8')), progress); }
+    catch (e) { merged = progress; }
+  }
+  writeProgressFile(file, merged);
+  res.json({ ok: true, progress: merged });
 });
+
+// Write-then-rename: a crash partway through a plain writeFileSync leaves a
+// truncated JSON file, and the reader treats unparseable progress as none.
+function writeProgressFile(file, data) {
+  const tmp = file + '.' + process.pid + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(data));
+  fs.renameSync(tmp, file);
+}
 
 app.post('/api/session-complete', requireAuth, (req, res) => {
   const entry = req.body || {};
@@ -279,11 +386,12 @@ if (require.main === module) {
 
 module.exports = {
   app, verifyGoogleIdTokenWithKeys, progressPath, buildServiceAccountJWT, SHEETS_CONFIGURED,
+  mergeProgress, pickItem, sweepSessions, authRateLimited,
   // Test-only seam: inserts a session directly so authenticated routes can
   // be exercised without a live Google token. Never reachable over HTTP.
   __testCreateSession(user) {
     const sessionId = crypto.randomUUID();
-    sessions.set(sessionId, user);
+    sessions.set(sessionId, Object.assign({ lastSeen: Date.now() }, user));
     return sessionId;
   }
 };
