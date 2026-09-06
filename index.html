@@ -1552,9 +1552,9 @@
   }
   function recommendReason(){
     var d = dueCount();
-    if(d >= 5) return d + ' cards are due for review today \u2014 due cards come first.';
+    if(d >= 5) return d + ' cards are ready to review \u2014 those come first.';
     var weak = weakestTopics(1);
-    if(weak.length) return 'Due cards first, then extra reps on your weakest topics (' + TOPIC_MAP[weak[0]].name + ' is lowest right now).';
+    if(weak.length) return 'A few ready-to-review cards, then extra reps on your weakest topics (' + TOPIC_MAP[weak[0]].name + ' is lowest right now).';
     return 'A mixed opening session across every topic, to find out where you stand.';
   }
 
@@ -2338,7 +2338,7 @@
 
     wrap.appendChild(el('div','section-label','Your Progress'));
     var statGrid = el('div','stat-grid');
-    statGrid.appendChild(statTile(String(dueCount()), 'Due Today'));
+    statGrid.appendChild(statTile(String(dueCount()), 'Ready to Review'));
     statGrid.appendChild(statTile(overallMastery()+'%', 'Overall Mastery'));
     statGrid.appendChild(statTile(masteredCount()+' / '+ALL_ITEMS.length, 'Cards Mastered'));
     statGrid.appendChild(statTile(String(PROGRESS.streak.count||0), 'Day Streak'));
