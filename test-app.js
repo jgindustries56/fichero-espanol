@@ -12,7 +12,7 @@ let code = scriptBody;
 // doesn't silently break every test in this file.
 const APP_TAIL = /\n  render\(\);[\s\S]*?\n\}\)\(\);\s*$/;
 code = code.replace(APP_TAIL, `
-window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,answeredToday:answeredToday,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable,gradeAnswer:gradeAnswer,normalizeStrict:normalizeStrict,dueForecast:dueForecast,forecastSection:forecastSection,pullProgress:pullProgress,STORE_KEY:STORE_KEY,NAV_GROUPS:NAV_GROUPS,activeNavGroup:activeNavGroup,navBar:navBar};
+window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable,gradeAnswer:gradeAnswer,normalizeStrict:normalizeStrict,dueForecast:dueForecast,forecastSection:forecastSection,pullProgress:pullProgress,STORE_KEY:STORE_KEY,NAV_GROUPS:NAV_GROUPS,activeNavGroup:activeNavGroup,navBar:navBar};
 window.__fetchCalls__ = () => fetchCalls;
 window.__clearFetchCalls__ = () => { fetchCalls.length = 0; };
 render();
@@ -497,7 +497,8 @@ check('every topic has an icon', ()=>{
 check('settings fall back to defaults and round-trip', ()=>{
   T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
   const d = T.settings();
-  if(d.quizSize !== 12 || d.typedFrom !== 2 || d.dailyGoal !== 30) throw new Error('unexpected defaults: '+JSON.stringify(d));
+  if(d.quizSize !== 12 || d.typedFrom !== 2) throw new Error('unexpected defaults: '+JSON.stringify(d));
+  if('dailyGoal' in d || 'reminderTime' in d) throw new Error('the removed daily-goal/reminder settings should not reappear: '+JSON.stringify(d));
   T.setSetting('quizSize', 20);
   if(T.settings().quizSize !== 20) throw new Error('setting did not stick');
   if(T.settings().testSize !== 30) throw new Error('unrelated setting was clobbered');
@@ -512,12 +513,16 @@ check('migration backfills days from existing history without inventing a streak
   if(!p.settings || !Array.isArray(p.history)) throw new Error('migration left the shape incomplete');
 });
 
-check('answering a card logs a study day and moves the daily goal', ()=>{
+check('answering a card logs a study day for the heatmap, with no goal attached to it', ()=>{
   T.setProgress(T.migrateProgress({items:{}, streak:{count:0,last:null}}));
-  const before = T.answeredToday();
+  const today = new Date();
+  const key = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const before = (T.getProgress().days && T.getProgress().days[key]) || 0;
   T.recordAnswer(T.ALL_ITEMS[0].id, true);
   T.recordAnswer(T.ALL_ITEMS[1].id, false);
-  if(T.answeredToday() !== before + 2) throw new Error('day counter did not advance: '+T.answeredToday());
+  const after = T.getProgress().days[key];
+  if(after !== before + 2) throw new Error('day counter did not advance: '+after);
+  if(typeof T.answeredToday === 'function') throw new Error('answeredToday should have been removed along with the daily goal it existed for');
 });
 
 check('typedFrom setting actually controls when cards flip to typing', ()=>{
@@ -680,13 +685,14 @@ check('badges are all locked on a fresh account and unlock on real work', ()=>{
   if(after.indexOf('first-session') === -1) throw new Error('first-session badge did not unlock');
 });
 
-check('home renders with all the new surfaces', ()=>{
+check('home renders with all the new surfaces, and no forced daily goal or reminder nag', ()=>{
   T.go('home');
   const tree = T.homeView();
   if(!findAll(tree, n => hasClass(n,'recommend')).length) throw new Error('no recommended-session card');
   if(!findAll(tree, n => hasClass(n,'heat-grid')).length) throw new Error('no streak heatmap');
   if(!findAll(tree, n => hasClass(n,'badge')).length) throw new Error('no milestone badges');
-  if(!findAll(tree, n => hasClass(n,'goal-fill')).length) throw new Error('no daily-goal bar');
+  if(findAll(tree, n => hasClass(n,'goal-fill')).length) throw new Error('the daily-goal bar should be gone — the app should not impose a quota');
+  if(findAll(tree, n => hasClass(n,'reminder-banner')).length) throw new Error('the reminder-nag banner should be gone along with the goal it existed to enforce');
 });
 
 check('settings page renders and every control is wired', ()=>{

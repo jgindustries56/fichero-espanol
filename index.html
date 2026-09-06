@@ -414,12 +414,6 @@
   .recommend-body p{margin:0; font-size:.83rem; color:var(--ink-soft); line-height:1.45;}
   .recommend .btn{flex-shrink:0;}
 
-  /* ---------- daily goal ---------- */
-  .goal-row{display:flex; align-items:center; gap:10px; font-size:.8rem; color:var(--ink-soft); margin-bottom:16px;}
-  .goal-track{flex:1; height:8px; background:var(--surface-2); border-radius:99px; overflow:hidden;}
-  .goal-fill{height:100%; border-radius:99px; background:var(--accent-pine);}
-  .goal-fill.met{background:var(--accent-gold);}
-
   /* ---------- streak heatmap ---------- */
   .heatmap{
     background:var(--surface); border:1px solid var(--rule); border-radius:12px; box-shadow:var(--shadow);
@@ -493,13 +487,6 @@
   .ref-table th{background:var(--surface-2); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
   .ref-section{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:18px 20px; margin-bottom:16px; box-shadow:var(--shadow);}
   .ref-section h3{font-size:1.1rem; margin-bottom:10px;}
-
-  /* ---------- reminder banner ---------- */
-  .reminder-banner{
-    background:color-mix(in srgb, var(--accent-gold) 14%, var(--surface));
-    border:1px solid var(--accent-gold); border-radius:10px; padding:11px 14px;
-    font-size:.83rem; line-height:1.45; margin-bottom:16px; color:var(--accent-gold-ink);
-  }
 
   /* ---------- tablet + landscape ---------- */
   @media (min-width:521px) and (max-width:900px){
@@ -1326,8 +1313,8 @@
   }
 
   var DEFAULT_SETTINGS = {
-    dailyGoal:30, quizSize:12, testSize:30, typedFrom:2,
-    reminderTime:'', theme:'system', textScale:100, strictAccents:false
+    quizSize:12, testSize:30, typedFrom:2,
+    theme:'system', textScale:100, strictAccents:false
   };
   function settings(){
     var out = {};
@@ -1465,13 +1452,13 @@
   }
 
   // Counts answers per calendar day. Separate from the streak (which only
-  // records whether a day happened) because the daily goal needs the volume.
+  // records whether a day happened) because the heatmap's shading needs the
+  // volume, not just a yes/no.
   function bumpDay(){
     if(!PROGRESS.days) PROGRESS.days = {};
     var t = todayStr();
     PROGRESS.days[t] = (PROGRESS.days[t]||0) + 1;
   }
-  function answeredToday(){ return (PROGRESS.days && PROGRESS.days[todayStr()]) || 0; }
 
   function bumpStreak(){
     var t = todayStr();
@@ -2290,22 +2277,6 @@
     return wrap;
   }
 
-  // An implementation intention ("I will study at 7pm") follows through far
-  // more reliably than a bare intention to study more. This is the in-app
-  // form of that: real push notifications with the tab closed would need a
-  // service worker and a permission prompt, which is a separate decision.
-  function reminderBanner(){
-    var st = settings();
-    if(!st.reminderTime) return null;
-    if(answeredToday() >= st.dailyGoal) return null;
-    var now = new Date();
-    var parts = st.reminderTime.split(':');
-    var mins = (parseInt(parts[0],10)||0)*60 + (parseInt(parts[1],10)||0);
-    if(now.getHours()*60 + now.getMinutes() < mins) return null;
-    return el('div','reminder-banner','\u23f0 It\'s past your '+st.reminderTime+' study time \u2014 '+
-      (answeredToday() ? (answeredToday()+' of '+st.dailyGoal+' cards done today.') : 'nothing done today yet.'));
-  }
-
   function recommendCard(){
     var box = el('div','recommend');
     var body = el('div','recommend-body');
@@ -2363,11 +2334,6 @@
   function homeView(){
     var wrap = el('div','');
 
-    var st = settings();
-
-    var reminder = reminderBanner();
-    if(reminder) wrap.appendChild(reminder);
-
     wrap.appendChild(recommendCard());
 
     wrap.appendChild(el('div','section-label','Your Progress'));
@@ -2377,17 +2343,6 @@
     statGrid.appendChild(statTile(masteredCount()+' / '+ALL_ITEMS.length, 'Cards Mastered'));
     statGrid.appendChild(statTile(String(PROGRESS.streak.count||0), 'Day Streak'));
     wrap.appendChild(statGrid);
-
-    var done = answeredToday(), goal = st.dailyGoal;
-    var goalRow = el('div','goal-row');
-    goalRow.appendChild(el('span','', done >= goal ? 'Daily goal met' : 'Today'));
-    var goalTrack = el('div','goal-track');
-    var goalFill = el('div','goal-fill'+(done>=goal?' met':''));
-    goalFill.style.width = Math.min(100, goal ? Math.round(100*done/goal) : 0)+'%';
-    goalTrack.appendChild(goalFill);
-    goalRow.appendChild(goalTrack);
-    goalRow.appendChild(el('span','mono', done+' / '+goal+' cards'));
-    wrap.appendChild(goalRow);
 
     if(GOOGLE_CLIENT_ID){
       var syncNote = el('div','sync-note');
@@ -2421,7 +2376,7 @@
       {title:'Study Methods', desc:'Fill-in-the-blank, multiple choice, matching, and more.', view:'methods'},
       {title:'History', desc:'Every past session and score, in full.', view:'history'},
       {title:'Reference Sheets', desc:'Printable tables for when you\'re doing the homework, not quizzing.', view:'reference'},
-      {title:'Settings', desc:'Daily goal, session sizes, reminders, and your data.', view:'settings'}
+      {title:'Settings', desc:'Session sizes, difficulty, theme, and your data.', view:'settings'}
     ];
     jumpItems.forEach(function(j){
       var card = el('div','global-card');
@@ -3191,16 +3146,9 @@
     var st = settings();
     var wrap = el('div','');
     wrap.appendChild(el('h2','page-title','Settings'));
-    wrap.appendChild(el('p','page-desc','How hard, how long, and how often \u2014 plus what happens to your data. Everything here is saved with your progress and follows you to any signed-in device.'));
+    wrap.appendChild(el('p','page-desc','How hard and how long \u2014 plus what happens to your data. Nothing here sets a quota; it\'s just here whenever you want to tune it. Everything is saved with your progress and follows you to any signed-in device.'));
 
     wrap.appendChild(el('div','section-label','Study'));
-
-    wrap.appendChild(settingRow({
-      title:'Daily goal',
-      desc:'How many cards you aim to answer each day. Shown as a bar on Home.',
-      controls: choiceButtons([10,20,30,50,80], st.dailyGoal, function(v){ setSetting('dailyGoal', v); render(); }, function(v){ return v+' cards'; }),
-      why:'A specific, moderately hard target beats \u201cstudy more\u201d \u2014 one of the most replicated findings in applied psychology (Locke & Latham).'
-    }));
 
     wrap.appendChild(settingRow({
       title:'Quiz length',
@@ -3227,20 +3175,6 @@
       controls: choiceButtons([false,true], st.strictAccents, function(v){ setSetting('strictAccents', v); render(); },
         function(v){ return v ? 'Strict' : 'Lenient'; }),
       why:'Either way you are told exactly what was off \u2014 specific corrective feedback is what changes the next attempt. Strict adds real difficulty, which helps once the words themselves are solid and mostly discourages before that.'
-    }));
-
-    wrap.appendChild(el('div','section-label','Reminder'));
-    var timeInput = el('input','setting-input');
-    timeInput.type = 'time';
-    timeInput.value = st.reminderTime || '';
-    timeInput.onchange = function(){ setSetting('reminderTime', timeInput.value); render(); };
-    var clearTime = el('button','btn btn-ghost btn-sm','Clear');
-    clearTime.onclick = function(){ setSetting('reminderTime',''); render(); };
-    wrap.appendChild(settingRow({
-      title:'Study time',
-      desc:'Set a time and Home will nudge you if the day\'s goal is still unmet when you open the app after it. This is an in-app reminder only \u2014 it cannot notify you with the tab closed.',
-      controls:[timeInput, clearTime],
-      why:'Naming when you will do something (\u201cI study at 7pm\u201d) raises follow-through well above simply intending to do it (Gollwitzer).'
     }));
 
     wrap.appendChild(el('div','section-label','Display'));
