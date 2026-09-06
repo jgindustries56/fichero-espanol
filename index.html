@@ -272,13 +272,30 @@
     .breakdown-name{width:120px;}
   }
 
-  /* ---------- nav bar ---------- */
-  .nav-bar{display:flex; gap:6px; overflow-x:auto; margin-bottom:24px; padding-bottom:2px;}
-  .nav-btn{
-    white-space:nowrap; padding:8px 14px; border-radius:999px; border:1px solid var(--rule);
-    background:var(--surface); font-size:.82rem; font-weight:600; color:var(--ink-soft); cursor:pointer;
+  /* ---------- nav bar ----------
+     Two tiers on purpose: five top-level destinations is within working-memory
+     span (Miller/Cowan's ~4-7 chunk limit) and keeps choice time low (Hick's
+     law), where the old flat 10-item row was not. Sub-pages for a group are
+     progressive disclosure — hidden until that group is actually open, so
+     they cost nothing when you're not using them. Every button in a row is
+     an equal flex share, so the row is always full-width and never scrolls. */
+  .nav-wrap{display:flex; flex-direction:column; gap:7px; margin-bottom:24px;}
+  .nav-bar, .nav-subbar{display:flex; gap:6px;}
+  .nav-btn, .nav-subbtn{
+    flex:1 1 0; min-width:0; text-align:center; padding:8px 4px; border-radius:10px; border:1px solid var(--rule);
+    background:var(--surface); font-size:.68rem; font-weight:700; color:var(--ink-soft); cursor:pointer;
+    line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .nav-btn.active{background:var(--accent-navy); border-color:var(--accent-navy); color:var(--on-accent);}
+  .nav-btn.active, .nav-subbtn.active{background:var(--accent-navy); border-color:var(--accent-navy); color:var(--on-accent);}
+  /* Icon above label, not beside it — the label alone doesn't fit five equal
+     columns at phone width without an ugly mid-word wrap, and a recognizable
+     glyph is a faster, second route to "which tab is this" regardless
+     (dual coding), the same reasoning already used for the topic icons. */
+  .nav-btn{display:flex; flex-direction:column; align-items:center; gap:2px; white-space:normal;}
+  .nav-btn>span:last-child{max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .nav-icon{font-size:1.05rem; line-height:1;}
+  .nav-subbtn{border-radius:999px; padding:7px 4px; font-size:.72rem; background:var(--surface-2); border-color:transparent;}
+  .nav-subbtn.active{background:var(--accent-navy);}
 
   /* ---------- page header ---------- */
   .page-title{font-size:1.5rem; margin-bottom:8px; text-wrap:balance;}
@@ -504,7 +521,7 @@
   }
 
   @media print{
-    .nav-bar, .topbar, .footer-links, .btn, .back-btn{display:none !important;}
+    .nav-wrap, .topbar, .footer-links, .btn, .back-btn{display:none !important;}
     .ref-section{break-inside:avoid; box-shadow:none; border-color:#999;}
     body{background:#fff; color:#000;}
   }
@@ -1016,17 +1033,27 @@
     {id:'speed', title:'Timed Speed Round', icon:'\u26a1', blurb:'Mastered cards only, against a clock. Time pressure is a useful difficulty once material is solid and a harmful one while it is still new, so this deck stays locked to cards you have already mastered (Bjork).'}
   ];
 
-  var NAV_ITEMS = [
-    {id:'home', label:'Home'},
-    {id:'study', label:'Study'},
-    {id:'quiz', label:'Quiz'},
-    {id:'test', label:'Test'},
-    {id:'guided', label:'Guided Exercises'},
-    {id:'methods', label:'Study Methods'},
-    {id:'history', label:'History'},
-    {id:'grades', label:'Report Card'},
-    {id:'reference', label:'Reference'},
-    {id:'settings', label:'Settings'}
+  // Ten flat destinations overloaded working memory and forced a scrolling
+  // row; five top-level groups (a chunk count psychology research treats as
+  // easy to hold at once) fixes both. A group's own sub-pages are named in
+  // `items` and only ever shown once that group is open (progressive
+  // disclosure) — `views` is every state.view that counts as "in this group"
+  // for highlighting the right tab, sub-states like guidedIntro included.
+  var NAV_GROUPS = [
+    {id:'home', label:'Home', icon:'🏠', views:['home']},
+    {id:'practice', label:'Practice', icon:'🎯', views:['study','quiz','test','guided','guidedIntro','methods','methodPicker'], items:[
+      {id:'study', label:'Study'},
+      {id:'quiz', label:'Quiz'},
+      {id:'test', label:'Test'},
+      {id:'guided', label:'Guided', views:['guided','guidedIntro']},
+      {id:'methods', label:'Modes', views:['methods','methodPicker']}
+    ]},
+    {id:'progress', label:'Stats', icon:'📈', views:['history','grades'], items:[
+      {id:'history', label:'History'},
+      {id:'grades', label:'Report Card'}
+    ]},
+    {id:'reference', label:'Sheets', icon:'📖', views:['reference','referenceSheet']},
+    {id:'settings', label:'Settings', icon:'⚙️', views:['settings']}
   ];
 
   /* ============================= ITEM BUILDERS ============================= */
@@ -1934,15 +1961,40 @@
     return wrap;
   }
 
+  function activeNavGroup(){
+    return NAV_GROUPS.filter(function(g){ return g.views.indexOf(state.view) !== -1; })[0] || NAV_GROUPS[0];
+  }
+
   function navBar(){
+    var wrap = el('div','nav-wrap');
+    var current = activeNavGroup();
+
     var bar = el('div','nav-bar');
-    NAV_ITEMS.forEach(function(n){
-      var active = state.view === n.id || (n.id==='guided' && state.view==='guidedIntro') || (n.id==='methods' && state.view==='methodPicker');
-      var b = el('button','nav-btn'+(active?' active':''), n.label);
-      b.onclick = function(){ go(n.id); };
+    NAV_GROUPS.forEach(function(g){
+      var active = g.id === current.id;
+      var b = el('button','nav-btn'+(active?' active':''));
+      b.innerHTML = '<span class="nav-icon">'+g.icon+'</span><span>'+escapeHtml(g.label)+'</span>';
+      b.onclick = function(){
+        if(active) return; // already here — the sub-row (if any) handles the rest
+        go(g.items ? g.items[0].views ? g.items[0].views[0] : g.items[0].id : g.views[0]);
+      };
       bar.appendChild(b);
     });
-    return bar;
+    wrap.appendChild(bar);
+
+    if(current.items){
+      var sub = el('div','nav-subbar');
+      current.items.forEach(function(it){
+        var itViews = it.views || [it.id];
+        var active = itViews.indexOf(state.view) !== -1;
+        var b = el('button','nav-subbtn'+(active?' active':''), it.label);
+        b.onclick = function(){ go(it.id); };
+        sub.appendChild(b);
+      });
+      wrap.appendChild(sub);
+    }
+
+    return wrap;
   }
 
   function infoPanel(){

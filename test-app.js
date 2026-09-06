@@ -12,7 +12,7 @@ let code = scriptBody;
 // doesn't silently break every test in this file.
 const APP_TAIL = /\n  render\(\);[\s\S]*?\n\}\)\(\);\s*$/;
 code = code.replace(APP_TAIL, `
-window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,answeredToday:answeredToday,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable,gradeAnswer:gradeAnswer,normalizeStrict:normalizeStrict,dueForecast:dueForecast,forecastSection:forecastSection,pullProgress:pullProgress,STORE_KEY:STORE_KEY};
+window.__T__={go:go,state:state,TOPICS:TOPICS,ALL_ITEMS:ALL_ITEMS,METHODS:METHODS,RULES:RULES,startSession:startSession,pickMixedSession:pickMixedSession,pickTopicSession:pickTopicSession,pickWeighted:pickWeighted,resultsView:resultsView,learnView:learnView,sessionView:sessionView,homeView:homeView,studyView:studyView,quizView:quizView,testView:testView,guidedView:guidedView,guidedIntroView:guidedIntroView,methodsView:methodsView,methodPickerView:methodPickerView,matchingView:matchingView,handleMatchClick:handleMatchClick,startMethod:startMethod,startMatching:startMatching,seedLearn:seedLearn,submitAnswer:submitAnswer,ITEMS_BY_TOPIC:ITEMS_BY_TOPIC,render:render,AUTH:AUTH,historyView:historyView,getProgress:function(){return PROGRESS;},setProgress:function(p){PROGRESS=p;},gradesView:gradesView,compositeGrade:compositeGrade,topicAccuracy:topicAccuracy,categoryAccuracy:categoryAccuracy,typeAccuracy:typeAccuracy,lifetimeAccuracy:lifetimeAccuracy,coveragePct:coveragePct,attemptedCount:attemptedCount,modeStats:modeStats,recentTrend:recentTrend,overallMastery:overallMastery,settingsView:settingsView,referenceView:referenceView,referenceSheetView:referenceSheetView,settings:settings,setSetting:setSetting,migrateProgress:migrateProgress,missedItems:missedItems,sentenceItems:sentenceItems,listeningItems:listeningItems,masteredItems:masteredItems,recommendedSession:recommendedSession,recommendReason:recommendReason,dueCount:dueCount,newCount:newCount,badgeDefs:badgeDefs,pickFinalExam:pickFinalExam,speedExpire:speedExpire,filteredHistory:filteredHistory,personalCallout:personalCallout,methodAvailability:methodAvailability,answeredToday:answeredToday,recordAnswer:recordAnswer,referenceRows:referenceRows,weakestTopics:weakestTopics,topicIcon:topicIcon,TOPIC_ICONS:TOPIC_ICONS,startMethod:startMethod,speechAvailable:speechAvailable,gradeAnswer:gradeAnswer,normalizeStrict:normalizeStrict,dueForecast:dueForecast,forecastSection:forecastSection,pullProgress:pullProgress,STORE_KEY:STORE_KEY,NAV_GROUPS:NAV_GROUPS,activeNavGroup:activeNavGroup,navBar:navBar};
 window.__fetchCalls__ = () => fetchCalls;
 window.__clearFetchCalls__ = () => { fetchCalls.length = 0; };
 render();
@@ -74,6 +74,68 @@ check('methods hub renders', ()=>{ T.go('methods'); T.methodsView(); });
 T.TOPICS.forEach(t=>{
   check('guided intro: '+t.id, ()=>{ T.go('guidedIntro', {topicId:t.id}); T.guidedIntroView(); });
   check('RULES has: '+t.id, ()=>{ if(!T.RULES[t.id]) throw new Error('missing RULES entry'); });
+});
+
+/* ---------- nav redesign: uniform top-level groups, sub-row only when relevant ---------- */
+
+check('the nav bar has exactly one uniform-width tab per group, never a scrolling row', ()=>{
+  T.go('home');
+  const tree = T.navBar();
+  const tabs = findAll(tree, n => hasClass(n,'nav-btn'));
+  if(tabs.length !== T.NAV_GROUPS.length) throw new Error('expected '+T.NAV_GROUPS.length+' top-level tabs, got '+tabs.length);
+});
+
+check('every view maps to exactly one nav group, and that group is the one marked active', ()=>{
+  const allViews = ['home','study','quiz','test','guided','guidedIntro','methods','methodPicker','history','grades','reference','referenceSheet','settings'];
+  allViews.forEach(v => {
+    T.state.view = v;
+    const owners = T.NAV_GROUPS.filter(g => g.views.indexOf(v) !== -1);
+    if(owners.length !== 1) throw new Error(v+' belongs to '+owners.length+' nav groups, expected exactly 1');
+    const tabs = findAll(T.navBar(), n => hasClass(n,'nav-btn'));
+    const activeTabs = tabs.filter(n => hasClass(n,'active'));
+    if(activeTabs.length !== 1) throw new Error('expected exactly one active top-level tab for view '+v+', got '+activeTabs.length);
+    if(activeTabs[0].innerHTML.indexOf(owners[0].label) === -1) throw new Error('active tab is "'+activeTabs[0].innerHTML+'" but '+v+' belongs to "'+owners[0].label+'"');
+  });
+});
+
+check('a sub-row only appears for groups that actually have sub-pages', ()=>{
+  T.go('home');
+  if(findAll(T.navBar(), n => hasClass(n,'nav-subbar')).length) throw new Error('Home has no sub-pages and should show no sub-row');
+  T.go('settings');
+  if(findAll(T.navBar(), n => hasClass(n,'nav-subbar')).length) throw new Error('Settings has no sub-pages and should show no sub-row');
+  T.go('quiz');
+  const sub = findAll(T.navBar(), n => hasClass(n,'nav-subbtn'));
+  if(sub.length !== 5) throw new Error('Practice should show 5 sub-items (Study/Quiz/Test/Guided/Methods), got '+sub.length);
+  const activeSub = sub.filter(n => hasClass(n,'active'));
+  if(activeSub.length !== 1 || activeSub[0].innerHTML !== 'Quiz') throw new Error('Quiz sub-tab should be the active one, got '+JSON.stringify(activeSub.map(n=>n.innerHTML)));
+});
+
+check('guidedIntro and methodPicker still light up their parent sub-tab', ()=>{
+  T.go('guidedIntro', {topicId:T.TOPICS[0].id});
+  let sub = findAll(T.navBar(), n => hasClass(n,'nav-subbtn') && hasClass(n,'active'));
+  if(sub.length !== 1 || sub[0].innerHTML !== 'Guided') throw new Error('guidedIntro should keep the Guided sub-tab active, got '+JSON.stringify(sub.map(n=>n.innerHTML)));
+  T.go('methodPicker', {methodId:'typed-drill'});
+  sub = findAll(T.navBar(), n => hasClass(n,'nav-subbtn') && hasClass(n,'active'));
+  if(sub.length !== 1 || sub[0].innerHTML !== 'Modes') throw new Error('methodPicker should keep the Modes sub-tab active, got '+JSON.stringify(sub.map(n=>n.innerHTML)));
+});
+
+check('clicking an inactive top-level tab jumps to that group\'s first page', ()=>{
+  T.go('settings');
+  const tabs = findAll(T.navBar(), n => hasClass(n,'nav-btn'));
+  const practiceTab = tabs.find(n => n.innerHTML.indexOf('Practice') !== -1);
+  practiceTab.onclick();
+  if(T.state.view !== 'study') throw new Error('Practice tab should land on Study by default, landed on '+T.state.view);
+  const progressTab = findAll(T.navBar(), n => hasClass(n,'nav-btn')).find(n => n.innerHTML.indexOf('Stats') !== -1);
+  progressTab.onclick();
+  if(T.state.view !== 'history') throw new Error('Progress tab should land on History by default, landed on '+T.state.view);
+});
+
+check('clicking the already-active top-level tab does not reset the sub-page you are on', ()=>{
+  T.go('test');
+  const tabs = findAll(T.navBar(), n => hasClass(n,'nav-btn'));
+  const practiceTab = tabs.find(n => n.innerHTML.indexOf('Practice') !== -1);
+  practiceTab.onclick();
+  if(T.state.view !== 'test') throw new Error('re-clicking the active Practice tab should not move off Test, moved to '+T.state.view);
 });
 
 // Recursively search a stub DOM tree — used to simulate real clicks through
